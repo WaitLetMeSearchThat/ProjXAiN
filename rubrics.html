@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Role Assessment Rubrics (Dropdown Scoring)</title>
+    <style>
+        /* --- 1. Base Colors (CSS Variables) --- */
+        :root {
+            /* Light Theme Defaults */
+            --bg-color: #f0f3f6;
+            --container-bg: #ffffff;
+            --text-color: #333;
+            --header-color: #1a73e8;
+            --tab-active-border: #1a73e8;
+            --tab-inactive-bg: #f7f7f7;
+            --tab-hover-bg: #e8f0fe;
+            --table-header-bg: #e8f0fe;
+            --table-header-text: #1a73e8;
+            --table-row-stripe: #fcfcfc;
+            --total-bg: #1a73e8;
+            --total-score-bg: #0d47a1;
+            --calculated-score-color: #d93025;
+            --gradient-start: #e9eef2;
+            --gradient-end: #dce1e7;
+            --box-shadow-medium: 0 6px 15px rgba(0, 0, 0, 0.1);
+            --box-shadow-strong: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* --- 2. Dark Theme Overrides --- */
+        .dark-mode {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --header-color: #64b5f6; 
+            --tab-active-border: #64b5f6;
+            --tab-inactive-bg: #282828;
+            --tab-hover-bg: #353535;
+            --table-header-bg: #2a2a2a;
+            --table-header-text: #64b5f6;
+            --table-row-stripe: #252525;
+            --total-bg: #424242;
+            --total-score-bg: #212121;
+            --calculated-score-color: #f4b400; 
+            --gradient-start: #0f1621;
+            --gradient-end: #171d2b;
+            --box-shadow-medium: 0 6px 15px rgba(0, 0, 0, 0.4);
+            --box-shadow-strong: 0 10px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        /* --- 3. General Styles --- */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            transition: background-color 0.4s, color 0.4s;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background-color: var(--container-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--box-shadow-strong);
+        }
+        h1 {
+            text-align: center;
+            color: var(--header-color);
+            border-bottom: 4px solid var(--header-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        h2 {
+            color: #34a853; 
+            margin-top: 10px;
+            margin-bottom: 15px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ccc;
+            font-size: 1.6em;
+            font-weight: 500;
+        }
+        .intro-text {
+            margin-bottom: 25px;
+            line-height: 1.6;
+            text-align: center;
+        }
+        
+        /* --- 4. Theme Toggle --- */
+        .theme-toggle-container {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .theme-toggle {
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--text-color);
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+        .theme-toggle:hover {
+            opacity: 0.8;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- 5. Tab Navigation Emphasis --- */
+        .tabs {
+            display: flex;
+            margin-bottom: 0;
+            border-bottom: 2px solid var(--tab-active-border);
+            box-shadow: var(--box-shadow-medium); 
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+        }
+        .tab-button {
+            background-color: var(--tab-inactive-bg);
+            border: none; 
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 14px 25px; 
+            cursor: pointer;
+            outline: none;
+            font-size: 1em;
+            font-weight: 600; 
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            flex-grow: 1; 
+            text-align: center;
+        }
+        .tab-button:last-child {
+            border-right: none;
+        }
+        .tab-button:hover:not(.active) {
+            background-color: var(--tab-hover-bg);
+            color: var(--header-color);
+        }
+        .tab-button.active {
+            background-color: var(--container-bg);
+            color: var(--header-color);
+            border-bottom: 4px solid var(--header-color); 
+            margin-bottom: -2px;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1); 
+        }
+
+        /* --- 6. Rubric Table Emphasis --- */
+        .tab-content {
+            padding: 25px; 
+            border: 1px solid var(--tab-active-border);
+            border-top: none; 
+            border-radius: 0 0 12px 12px;
+            background-color: var(--container-bg);
+            box-shadow: var(--box-shadow-medium); 
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            table-layout: fixed;
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 15px; 
+            text-align: left;
+            vertical-align: top;
+            word-wrap: break-word;
+            font-size: 0.95em;
+            border-color: rgba(150, 150, 150, 0.2);
+        }
+        tbody tr:nth-child(even) td {
+            background-color: var(--table-row-stripe);
+        }
+        th {
+            background-color: var(--table-header-bg);
+            color: var(--table-header-text);
+            font-weight: 700; 
+            font-size: 1em;
+            text-transform: uppercase;
+        }
+        .score-column {
+            width: 10%;
+            text-align: center;
+            font-weight: bold;
+            background-color: transparent !important;
+        }
+        .points-range {
+            font-size: 0.8em;
+            font-style: italic;
+        }
+        .total-row td {
+            background-color: var(--total-bg);
+            color: white;
+            font-weight: 700;
+            text-align: right;
+            border-color: var(--total-bg);
+            font-size: 1.1em;
+        }
+        .total-row .score-column {
+            background-color: var(--total-score-bg);
+            font-size: 1.3em;
+        }
+        /* Dropdown/Input Styling */
+        .score-select, .score-input {
+            width: 100%;
+            text-align: center;
+            border: 1px solid #aaa;
+            padding: 8px 5px;
+            box-sizing: border-box;
+            font-weight: 600;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .dark-mode .score-select, .dark-mode .score-input {
+             border-color: #555;
+        }
+        .calculated-score {
+            font-style: italic;
+            color: var(--calculated-score-color); 
+            font-weight: 900;
+        }
+
+        /* Specific style for the instructor score input */
+        .instructor-score-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .instructor-score-container .score-select {
+            width: 70%; 
+            background-color: #e3e8f5; 
+            color: #333;
+            border: none;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="theme-toggle-container">
+        <button class="theme-toggle" onclick="toggleTheme()">☀️/🌙 Toggle Theme</button>
+    </div>
+
+    <h1>⭐ Interactive Group Role Assessment Rubrics</h1>
+    <p class="intro-text">
+        **Scoring Breakdown:**
+        <ul>
+            <li>**Technical Roles (FE, BE, Analyst):** 90 points from detailed rubric + 10 points from Instructor = **100 points total**.</li>
+            <li>**Project Manager (PM):** 30% Weighted Frontend + 30% Weighted Backend + 30% Weighted Analyst + 10% Presentation = **100 points total**.</li>
+        </ul>
+    </p>
+    <hr>
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab(event, 'Frontend')">💻 Frontend Developer</button>
+        <button class="tab-button" onclick="openTab(event, 'Backend')">⚙️ Backend Developer</button>
+        <button class="tab-button" onclick="openTab(event, 'Analyst')">🧠 System Analyst</button>
+        <button class="tab-button" onclick="openTab(event, 'Manager')">🎯 Project Manager</button>
+    </div>
+
+    <div class="tab-content">
+
+        <div id="Frontend" class="tab-pane active">
+            <h2>💻 1. Frontend Developer Rubric (100 Points Total)</h2>
+            <p>Evaluates the quality of the **user interface (UI)**, **user experience (UX)**, and client-side implementation of **CRUD operations**.</p>
+            <table id="frontend-table">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Criteria</th>
+                        <th style="width: 17%;">Excellent<br><span class="points-range">(24-30 pts)</span></th>
+                        <th style="width: 17%;">Proficient<br><span class="points-range">(16-23 pts)</span></th>
+                        <th style="width: 17%;">Developing<br><span class="points-range">(9-15 pts)</span></th>
+                        <th style="width: 17%;">Unsatisfactory<br><span class="points-range">(0-8 pts)</span></th>
+                        <th class="score-column">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>**CRUD Interaction & Feedback** (Max 30)</td>
+                        <td>User actions are intuitive, provide **instant and clear feedback** (e.g., success messages), and handle errors gracefully.</td>
+                        <td>Actions are functional; feedback is adequate but may lack polish or visual clarity.</td>
+                        <td>Actions are functional but lack clear user feedback; user must manually check for success/failure.</td>
+                        <td>CRUD actions are confusing, require multiple steps, or fail silently.</td>
+                        <td class="score-column">
+                            <select data-max="30" class="score-select" onchange="calculateTotal('Frontend'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(30));</script>
+                            </select>
+                            /30
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>**Data Display (Read & Usability)** (Max 22)</td>
+                        <td>Data lists are efficiently rendered, easily **searchable/sortable**, and display updated information instantly (without manual refresh).</td>
+                        <td>Data is displayed clearly and correctly. Minor delays in showing updated data may occur.</td>
+                        <td>Data presentation is basic, lacking organization (e.g., sort), or requires a manual page refresh.</td>
+                        <td>Data fails to load correctly, or loaded data is stale/incorrect.</td>
+                        <td class="score-column">
+                             <select data-max="22" class="score-select" onchange="calculateTotal('Frontend'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(22));</script>
+                            </select>
+                            /22
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>**Form/Input Handling (Create/Update)** (Max 18)</td>
+                        <td>Forms are highly usable, featuring clear **validation**, helpful error messages, and support efficient data entry.</td>
+                        <td>Forms handle necessary data entry and basic validation effectively.</td>
+                        <td>Forms lack crucial input validation or error messages are cryptic/unhelpful.</td>
+                        <td>Forms are broken, or fail to transmit data correctly to the backend API.</td>
+                        <td class="score-column">
+                            <select data-max="18" class="score-select" onchange="calculateTotal('Frontend'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(18));</script>
+                            </select>
+                            /18
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>**Code Quality & Standards** (Max 20)</td>
+                        <td>Clean, highly maintainable component-based code. Excellent separation of UI/logic. Proactively handles asynchronous state.</td>
+                        <td>Code is readable and modular. Handles loading/error states adequately.</td>
+                        <td>Code is messy or monolithic; asynchronous state handling is inconsistent or buggy.</td>
+                        <td>Code is difficult to read/debug, or causes frequent UI freezing/errors.</td>
+                        <td class="score-column">
+                             <select data-max="20" class="score-select" onchange="calculateTotal('Frontend'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(20));</script>
+                            </select>
+                            /20
+                        </td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4" style="text-align: right;">**Subtotal (Rubric Score)**</td>
+                        <td class="score-column"><span id="frontend-rubric-total">0</span>/90</td>
+                        <td class="score-column" style="background-color: var(--total-bg);"></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4" style="text-align: right; background-color: #5075c2;">**Instructor Score (Max 10)**</td>
+                        <td class="score-column instructor-score-container" style="background-color: #5075c2;">
+                             <select data-max="10" class="score-select" id="fe-instructor-input" onchange="calculateTotal('Frontend'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(10));</script>
+                             </select>
+                        </td>
+                        <td class="score-column" style="background-color: #5075c2;"><span id="fe-instructor-score">0</span>/10</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="5" style="text-align: right;">**Section Total: Frontend Developer (Final Grade)**</td>
+                        <td class="score-column"><span id="frontend-total">0</span>/100</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="Backend" class="tab-pane">
+            <h2>⚙️ 2. Backend Developer Rubric (100 Points Total)</h2>
+            <p>Evaluates the quality of handling data operations (**Create, Read, Update, Delete**) using the server and **MySQL** (via XAMPP).</p>
+            <table id="backend-table">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Criteria</th>
+                        <th style="width: 17%;">Excellent<br><span class="points-range">(31-35 pts)</span></th>
+                        <th style="width: 17%;">Proficient<br><span class="points-range">(23-30 pts)</span></th>
+                        <th style="width: 17%;">Developing<span class="points-range">(15-22 pts)</span></th>
+                        <th style="width: 17%;">Unsatisfactory<br><span class="points-range">(0-14 pts)</span></th>
+                        <th class="score-column">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>**Data Functionality (C.R.U.D)** (Max 35)</td>
+                        <td>All four functions (**Insert, View List, Modify, Remove**) work perfectly, handle common errors, and give correct success/failure messages back to the frontend.</td>
+                        <td>All four functions work correctly under normal conditions. Handles basic errors adequately.</td>
+                        <td>One or more functions are unstable or fail to send correct responses (like success/error) back to the frontend.</td>
+                        <td>Multiple essential functions are broken or cause the server/database connection to fail.</td>
+                        <td class="score-column">
+                            <select data-max="35" class="score-select" onchange="calculateTotal('Backend'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(35));</script>
+                            </select>
+                            /35
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>**Data Integrity & Saving (Create & Update)** (Max 20)</td>
+                        <td>Checks on the server side prevent bad data from being **inserted** or **updated**. Data in the MySQL tables remains accurate and consistent.</td>
+                        <td>Basic server checks are present to maintain data quality when saving or modifying data.</td>
+                        <td>Server checks are missing, allowing bad or missing data to be saved easily, potentially corrupting the database.</td>
+                        <td>Data is frequently saved incorrectly or records are messed up after updating.</td>
+                        <td class="score-column">
+                             <select data-max="20" class="score-select" onchange="calculateTotal('Backend'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(20));</script>
+                            </select>
+                            /20
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>**MySQL Query Quality & Security** (Max 20)</td>
+                        <td>MySQL code for **Viewing, Updating, and Deleting** data is fast and uses safe methods (like prepared statements) to prevent basic security issues (SQL injection).</td>
+                        <td>MySQL queries work and are reasonably fast. Basic safety measures are used.</td>
+                        <td>Queries are noticeably slow, or the database code is written in a way that creates a risk of security problems.</td>
+                        <td>Queries fail often, are extremely slow, or result in major security flaws.</td>
+                        <td class="score-column">
+                            <select data-max="20" class="score-select" onchange="calculateTotal('Backend'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(20));</script>
+                            </select>
+                            /20
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>**API Setup & Organization** (Max 15)</td>
+                        <td>The server code (API) is simple, easy to understand, and its structure (paths and format) is clearly defined for the Frontend Developer.</td>
+                        <td>The server code structure is logical and easy for the Frontend Developer to use.</td>
+                        <td>Server paths or data formats are inconsistent, causing confusion or extra work for the Frontend team.</td>
+                        <td>The server setup is messy, making it difficult for the Frontend to connect and use the data functions.</td>
+                        <td class="score-column">
+                            <select data-max="15" class="score-select" onchange="calculateTotal('Backend'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(15));</script>
+                            </select>
+                            /15
+                        </td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4" style="text-align: right;">**Subtotal (Rubric Score)**</td>
+                        <td class="score-column"><span id="backend-rubric-total">0</span>/90</td>
+                        <td class="score-column" style="background-color: var(--total-bg);"></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4" style="text-align: right; background-color: #5075c2;">**Instructor Score (Max 10)**</td>
+                        <td class="score-column instructor-score-container" style="background-color: #5075c2;">
+                             <select data-max="10" class="score-select" id="be-instructor-input" onchange="calculateTotal('Backend'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(10));</script>
+                             </select>
+                        </td>
+                        <td class="score-column" style="background-color: #5075c2;"><span id="be-instructor-score">0</span>/10</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="5" style="text-align: right;">**Section Total: Backend Developer (Final Grade)**</td>
+                        <td class="score-column"><span id="backend-total">0</span>/100</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="Analyst" class="tab-pane">
+            <h2>🧠 3. System Analyst Rubric (100 Points Total)</h2>
+            <p>Evaluates the quality of the **Entity-Relationship Diagram (ERD)**, the **System Flow Chart** 
+
+[Image of System Architecture Diagram]
+, and essential documentation.</p>
+            <table id="analyst-table">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Criteria</th>
+                        <th style="width: 17%;">Excellent<br><span class="points-range">(31-35 pts)</span></th>
+                        <th style="width: 17%;">Proficient<br><span class="points-range">(23-30 pts)</span></th>
+                        <th style="width: 17%;">Developing<br><span class="points-range">(15-22 pts)</span></th>
+                        <th style="width: 17%;">Unsatisfactory<br><span class="points-range">(0-14 pts)</span></th>
+                        <th class="score-column">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>**Entity-Relationship Diagram (ERD) Quality** (Max 35)</td>
+                        <td>ERD is **perfectly normalized**, clearly defines all keys and relationships, exactly matching the database implementation.</td>
+                        <td>ERD covers all main entities and relationships; minor normalization or key definition inconsistencies exist.</td>
+                        <td>ERD is missing critical entities or relationships, or contains major errors that conflict with the final database schema.</td>
+                        <td>No usable ERD, or the diagram is fundamentally flawed and useless for database implementation.</td>
+                        <td class="score-column">
+                            <select data-max="35" class="score-select" onchange="calculateTotal('Analyst'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(35));</script>
+                            </select>
+                            /35
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>**System Flow Chart Completeness** (Max 25)</td>
+                        <td>The Flow Chart clearly, accurately, and simply illustrates the step-by-step process and decision points for all four **CRUD operations**. 
+                        </td>
+                        <td>Flow Chart covers the main path for all CRUD operations, with minor omissions in error or exception handling.</td>
+                        <td>Flow Chart is confusing, difficult to follow, or omits one or more of the core CRUD operations.</td>
+                        <td>No flow chart, or the chart is irrelevant to the system's actual data flow.</td>
+                        <td class="score-column">
+                            <select data-max="25" class="score-select" onchange="calculateTotal('Analyst'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(25));</script>
+                            </select>
+                            /25
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>**Requirements Traceability** (Max 15)</td>
+                        <td>The CRUD requirements are clearly mapped to the data model and expected UI screens, serving as a **strong guide** for developers.</td>
+                        <td>The core CRUD functions are traceable to the final output. Minor features may be difficult to trace.</td>
+                        <td>Requirements are vague or do not clearly articulate the scope of the CUD operations.</td>
+                        <td>The built system functionality does not match the documented requirements.</td>
+                        <td class="score-column">
+                            <select data-max="15" class="score-select" onchange="calculateTotal('Analyst'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(15));</script>
+                            </select>
+                            /15
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>**Documentation Clarity** (Max 15)</td>
+                        <td>Provides concise, **high-quality documentation** that facilitates easy understanding for both developers and future users.</td>
+                        <td>Documentation is present and covers necessary technical and user aspects.</td>
+                        <td>Documentation is difficult to follow, incomplete, or lacks essential information for future maintenance.</td>
+                        <td>Little to no relevant system or user documentation is provided.</td>
+                        <td class="score-column">
+                            <select data-max="15" class="score-select" onchange="calculateTotal('Analyst'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(15));</script>
+                            </select>
+                            /15
+                        </td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4" style="text-align: right;">**Subtotal (Rubric Score)**</td>
+                        <td class="score-column"><span id="analyst-rubric-total">0</span>/90</td>
+                        <td class="score-column" style="background-color: var(--total-bg);"></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4" style="text-align: right; background-color: #5075c2;">**Instructor Score (Max 10)**</td>
+                        <td class="score-column instructor-score-container" style="background-color: #5075c2;">
+                             <select data-max="10" class="score-select" id="analyst-instructor-input" onchange="calculateTotal('Analyst'); calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(10));</script>
+                             </select>
+                        </td>
+                        <td class="score-column" style="background-color: #5075c2;"><span id="analyst-instructor-score">0</span>/10</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="5" style="text-align: right;">**Section Total: System Analyst (Final Grade)**</td>
+                        <td class="score-column"><span id="analyst-total">0</span>/100</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="Manager" class="tab-pane">
+            <h2>🎯 4. Project Manager Rubric (100 Points Total)</h2>
+            <p>**Weighted Assessment:** The total score is calculated based on the technical roles' rubric scores (max 90), plus 10 points for the Presentation.</p>
+            <table id="manager-table">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Criteria</th>
+                        <th style="width: 17%;">Basis</th>
+                        <th style="width: 17%;">Calculation</th>
+                        <th style="width: 17%;">Max Points</th>
+                        <th style="width: 17%;">Result</th>
+                        <th class="score-column">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>**Weighted Score: Frontend Developer**</td>
+                        <td>30% of Frontend's **90-point** rubric score.</td>
+                        <td>(FE Rubric Score / 90) * 30</td>
+                        <td>30 pts</td>
+                        <td class="calculated-score">Calculated</td>
+                        <td class="score-column calculated-score"><span id="pm-frontend-weighted">0</span>/30</td>
+                    </tr>
+                    <tr>
+                        <td>**Weighted Score: Backend Developer**</td>
+                        <td>30% of Backend's **90-point** rubric score.</td>
+                        <td>(BE Rubric Score / 90) * 30</td>
+                        <td>30 pts</td>
+                        <td class="calculated-score">Calculated</td>
+                        <td class="score-column calculated-score"><span id="pm-backend-weighted">0</span>/30</td>
+                    </tr>
+                    <tr>
+                        <td>**Weighted Score: System Analyst**</td>
+                        <td>30% of Analyst's **90-point** rubric score.</td>
+                        <td>(Analyst Rubric Score / 90) * 30</td>
+                        <td>30 pts</td>
+                        <td class="calculated-score">Calculated</td>
+                        <td class="score-column calculated-score"><span id="pm-analyst-weighted">0</span>/30</td>
+                    </tr>
+                    <tr>
+                        <td>**Direct Score: Final Presentation**</td>
+                        <td>Direct scoring based on presentation quality.</td>
+                        <td>Manual Input (Max 10)</td>
+                        <td>10 pts</td>
+                        <td class="calculated-score">Manual</td>
+                        <td class="score-column instructor-score-container">
+                             <select data-max="10" class="score-select" id="pm-presentation-input" onchange="calculateWeightedPmScore();">
+                                <script>document.write(generateOptions(10));</script>
+                             </select>
+                            /10
+                        </td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="5" style="text-align: right;">**Section Total: Project Manager**</td>
+                        <td class="score-column"><span id="manager-total">0</span>/100</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    /**
+     * Generates HTML option tags for a dropdown menu, ranging from 0 up to maxScore.
+     * @param {number} maxScore - The maximum score allowed.
+     * @returns {string} The HTML string for the options.
+     */
+    function generateOptions(maxScore) {
+        let options = '';
+        for (let i = 0; i <= maxScore; i++) {
+            // Set default value to 0
+            options += `<option value="${i}" ${i === 0 ? 'selected' : ''}>${i}</option>`;
+        }
+        return options;
+    }
+
+    /**
+     * JavaScript function to handle the tab switching logic.
+     */
+    function openTab(evt, tabName) {
+        let i, tabcontent, tablinks;
+
+        // Hide all tab content
+        tabcontent = document.getElementsByClassName("tab-pane");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove('active');
+        }
+
+        // Deactivate all tab buttons
+        tablinks = document.getElementsByClassName("tab-button");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove('active');
+        }
+
+        // Show the current tab and activate the button
+        document.getElementById(tabName).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+
+    /**
+     * Calculates the total score for a specific rubric tab (Frontend, Backend, Analyst).
+     * @param {string} tabName - The prefix of the table/total elements (e.g., 'Frontend', 'Backend').
+     * @returns {number} The calculated rubric score for the role (max 90), used for PM weighting.
+     */
+    function calculateTotal(tabName) {
+        const lowerTabName = tabName.toLowerCase();
+        const tableId = lowerTabName + '-table';
+        const finalTotalId = lowerTabName + '-total';
+        const rubricTotalId = lowerTabName + '-rubric-total';
+        const instructorInputId = lowerTabName.charAt(0) + lowerTabName.charAt(1) + '-instructor-input';
+        const instructorScoreDisplayId = lowerTabName.charAt(0) + lowerTabName.charAt(1) + '-instructor-score';
+
+        // 1. Calculate Rubric Score (Max 90)
+        // Selects only the criteria selects (excluding the instructor select at the bottom)
+        const criteriaSelects = document.querySelectorAll(`#${tableId} tbody .score-select:not(#${instructorInputId})`);
+        let rubricScore = 0;
+        const maxRubricScore = 90;
+
+        criteriaSelects.forEach(select => {
+            // Since it's a select, the value is always a valid integer between 0 and data-max
+            let score = parseInt(select.value);
+            rubricScore += score;
+        });
+
+        if (rubricScore > maxRubricScore) {
+            rubricScore = maxRubricScore;
+        }
+
+        // 2. Get Instructor Score (Max 10)
+        const instructorSelect = document.getElementById(instructorInputId);
+        // Value is guaranteed to be 0-10 due to dropdown
+        let instructorScore = parseInt(instructorSelect.value);
+        
+        // 3. Calculate Final Total (Max 100)
+        const finalTotalScore = rubricScore + instructorScore;
+
+        // 4. Update the displayed scores
+        document.getElementById(rubricTotalId).textContent = rubricScore;
+        document.getElementById(instructorScoreDisplayId).textContent = instructorScore;
+        document.getElementById(finalTotalId).textContent = finalTotalScore;
+        
+        // Return the rubric score (Max 90) which is used for PM calculation
+        return rubricScore;
+    }
+
+    /**
+     * Calculates the weighted total score for the Project Manager (Max 100 points).
+     */
+    function calculateWeightedPmScore() {
+        // 1. Get rubric scores (Max 90 for each). calculateTotal returns the rubric score.
+        const frontendRubricScore = calculateTotal('Frontend'); 
+        const backendRubricScore = calculateTotal('Backend');
+        const analystRubricScore = calculateTotal('Analyst');
+        const technicalMax = 90; // The maximum score the developers can get from the rubric
+
+        // 2. Get direct score for Presentation (max 10)
+        const presentationSelect = document.getElementById('pm-presentation-input');
+        // Value is guaranteed to be 0-10 due to dropdown
+        let presentationScore = parseInt(presentationSelect.value);
+        
+        // 3. Apply weights (Score / TechnicalMax) * 30.
+        // Math.round is used to handle floating point results from division
+        const pmFrontend = Math.round((frontendRubricScore / technicalMax) * 30);
+        const pmBackend = Math.round((backendRubricScore / technicalMax) * 30);
+        const pmAnalyst = Math.round((analystRubricScore / technicalMax) * 30);
+        
+        // 4. Calculate Final Total
+        const totalPMScore = pmFrontend + pmBackend + pmAnalyst + presentationScore;
+
+        // 5. Update PM Table display
+        document.getElementById('pm-frontend-weighted').textContent = pmFrontend;
+        document.getElementById('pm-backend-weighted').textContent = pmBackend;
+        document.getElementById('pm-analyst-weighted').textContent = pmAnalyst;
+        document.getElementById('manager-total').textContent = totalPMScore;
+    }
+
+    /**
+     * Toggles between light and dark theme by adding/removing the 'dark-mode' class to the body.
+     */
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    }
+
+    // Initialize calculation and theme when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        // Load theme preference from local storage
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Ensure the first tab is active on load
+        document.getElementById('Frontend').classList.add('active');
+        document.querySelector('.tabs .tab-button').classList.add('active');
+
+        // Run initial calculations
+        calculateTotal('Frontend');
+        calculateTotal('Backend');
+        calculateTotal('Analyst');
+        calculateWeightedPmScore();
+    });
+</script>
+
+</body>
+</html>

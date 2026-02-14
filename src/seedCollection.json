@@ -1,0 +1,55 @@
+{
+
+  "prospectus": [
+    {
+      "subject": "DM 103",
+      "professor": "Santiago",
+      "room": "CL 3"
+    },
+    {
+      "subject": "GE 3",
+      "professor": "Senining",
+      "room": "RM 1"
+    },
+    {
+      "subject": "RIZAL",
+      "professor": "Apawan",
+      "room": "RM 4"
+    },
+    {
+      "subject": "ADV 01",
+      "professor": "Salem",
+      "room": "RM 3 / RM 7"
+    },
+    {
+      "subject": "ADV 02",
+      "professor": "Salem",
+      "room": "RM 3 / RM 7"
+    },
+    {
+      "subject": "GE 2",
+      "professor": "Ariston",
+      "room": "RM 7"
+    },
+    {
+      "subject": "GE ELEC 1",
+      "professor": "Ferreras / Soliva",
+      "room": "RM 2 / RM 5 / RM 7"
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2024-01-15",
+    "description": "Seed collection for BCC student and faculty data including grades and prospectus information",
+    "collections": {
+      "grades": {
+        "count": 10,
+        "description": "Student grade records with subject, grade, and source information"
+      },
+      "prospectus": {
+        "count": 7,
+        "description": "Subject prospectus with professor and room assignments"
+      }
+    }
+  }
+}

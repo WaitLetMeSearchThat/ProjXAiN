@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compact Component Library | Pure HTML/CSS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        /* Compact Component Cards */
+        .component-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .component-card h3 {
+            margin: 0 0 0.75rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .component-tags {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 2px 6px;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* Compact Code Block */
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 0.75rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            position: relative;
+            margin-top: 0.75rem;
+            max-height: 200px;
+        }
+
+        .code-block button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* Compact Preview Section */
+        .preview-section {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 6px;
+            position: relative;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .preview-section h4 {
+            position: absolute;
+            top: -8px;
+            left: 1rem;
+            margin: 0;
+            padding: 0 0.5rem;
+            background: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        /* Compact Tabs */
+        .tab-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 0.375rem 0.75rem;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tab-button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Compact Grid Layout */
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Copy Notification */
+        .copy-notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--success);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+            font-size: 0.75rem;
+        }
+
+        .copy-notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Utility Classes */
+        .compact-header {
+            padding: 0.5rem 1rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        .compact-button {
+            padding: 0.375rem 0.75rem !important;
+            font-size: 0.75rem !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="copyNotification" class="copy-notification">
+        <i class="fas fa-check-circle mr-1"></i>
+        <span>Copied!</span>
+    </div>
+
+    <!-- Compact Header -->
+    <header class="tab-container">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <i class="fas fa-cube text-white text-xs"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800">Compact Component Library</h1>
+                    <p class="text-xs text-slate-600">Copy-paste ready components</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="#" class="text-xs text-slate-600 hover:text-indigo-600">Docs</a>
+                <a href="#" class="text-xs text-slate-600 hover:text-indigo-600">GitHub</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-4">
+        <!-- Compact Introduction -->
+        <div class="mb-6 p-4 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100">
+            <h2 class="text-lg font-bold text-slate-800 mb-2">Build Faster with Components</h2>
+            <p class="text-xs text-slate-600 mb-3">Pure HTML/CSS components. No dependencies.</p>
+            <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 bg-white rounded text-xs text-slate-700 font-medium">Responsive</span>
+                <span class="px-2 py-1 bg-white rounded text-xs text-slate-700 font-medium">Lightweight</span>
+                <span class="px-2 py-1 bg-white rounded text-xs text-slate-700 font-medium">Accessible</span>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('headers')">
+                    <i class="fas fa-header text-xs"></i> Headers
+                </button>
+                <button class="tab-button" onclick="switchTab('hero')">
+                    <i class="fas fa-star text-xs"></i> Hero
+                </button>
+                <button class="tab-button" onclick="switchTab('cards')">
+                    <i class="fas fa-layer-group text-xs"></i> Cards
+                </button>
+                <button class="tab-button" onclick="switchTab('features')">
+                    <i class="fas fa-bolt text-xs"></i> Features
+                </button>
+                <button class="tab-button" onclick="switchTab('forms')">
+                    <i class="fas fa-edit text-xs"></i> Forms
+                </button>
+                <button class="tab-button" onclick="switchTab('footers')">
+                    <i class="fas fa-footer text-xs"></i> Footers
+                </button>
+            </div>
+        </div>
+
+        <!-- HEADERS TAB -->
+        <div id="headers" class="tab-content active">
+            <div class="component-grid">
+                <!-- Header 1: Compact Minimal -->
+                <div class="component-card">
+                    <h3><i class="fas fa-header text-xs"></i> Header 1: Minimal</h3>
+                    <div class="component-tags">
+                        <span class="tag">Dark</span>
+                        <span class="tag">Simple</span>
+                    </div>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem;">
+                            <div style="background: #1e293b; color: white; padding: 0.5rem; border-radius: 4px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 600;">Brand</span>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <span style="opacity: 0.7;">Home</span>
+                                        <span style="opacity: 0.7;">About</span>
+                                        <button style="background: white; color: #1e293b; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.7rem; border: none;">Sign In</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="background: #1e293b; color: white; padding: 0.5rem;"&gt;
+  &lt;div style="display: flex; justify-content: space-between;"&gt;
+    &lt;span style="font-weight: 600;"&gt;Brand&lt;/span&gt;
+    &lt;div style="display: flex; gap: 0.5rem;"&gt;
+      &lt;span&gt;Home&lt;/span&gt;
+      &lt;span&gt;About&lt;/span&gt;
+      &lt;button style="background: white; color: #1e293b; padding: 0.25rem 0.5rem; border-radius: 3px; border: none;"&gt;Sign In&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+
+                <!-- Header 2: Compact Gradient -->
+                <div class="component-card">
+                    <h3><i class="fas fa-palette text-xs"></i> Header 2: Gradient</h3>
+                    <div class="component-tags">
+                        <span class="tag">Gradient</span>
+                        <span class="tag">Modern</span>
+                    </div>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem;">
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.5rem; border-radius: 4px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 600;">Logo</span>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <span>Products</span>
+                                        <span>Pricing</span>
+                                        <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 3px;">Contact</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.5rem;"&gt;
+  &lt;div style="display: flex; justify-content: space-between;"&gt;
+    &lt;span style="font-weight: 600;"&gt;Logo&lt;/span&gt;
+    &lt;div style="display: flex; gap: 0.5rem;"&gt;
+      &lt;span&gt;Products&lt;/span&gt;
+      &lt;span&gt;Pricing&lt;/span&gt;
+      &lt;span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 3px;"&gt;Contact&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+
+                <!-- Header 3: Compact Glass -->
+                <div class="component-card">
+                    <h3><i class="fas fa-glass-whiskey text-xs"></i> Header 3: Glassmorphism</h3>
+                    <div class="component-tags">
+                        <span class="tag">Glass</span>
+                        <span class="tag">Modern</span>
+                    </div>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 1rem; border-radius: 4px;">
+                            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 4px; padding: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 600; color: white;">GlassUI</span>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <span style="color: rgba(255,255,255,0.8);">Dashboard</span>
+                                        <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #3b82f6);"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 0.5rem; border-radius: 4px;"&gt;
+  &lt;div style="display: flex; justify-content: space-between;"&gt;
+    &lt;span style="font-weight: 600; color: white;"&gt;GlassUI&lt;/span&gt;
+    &lt;div style="display: flex; gap: 0.5rem; align-items: center;"&gt;
+      &lt;span style="color: rgba(255,255,255,0.8);"&gt;Dashboard&lt;/span&gt;
+      &lt;div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #3b82f6);"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HERO TAB -->
+        <div id="hero" class="tab-content">
+            <div class="component-grid">
+                <!-- Hero 1: Compact CTA -->
+                <div class="component-card">
+                    <h3><i class="fas fa-rocket text-xs"></i> Hero 1: Simple CTA</h3>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem;">
+                            <div style="background: linear-gradient(135deg, #f0f4ff 0%, #fdf2ff 100%); padding: 1rem; border-radius: 4px; text-align: center;">
+                                <h3 style="margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600;">Build Amazing Sites</h3>
+                                <p style="margin: 0 0 1rem; color: #64748b;">Fast, responsive components</p>
+                                <button style="background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white; padding: 0.375rem 0.75rem; border: none; border-radius: 4px; font-size: 0.7rem;">Get Started</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="background: linear-gradient(135deg, #f0f4ff 0%, #fdf2ff 100%); padding: 1rem; text-align: center; border-radius: 4px;"&gt;
+  &lt;h3 style="margin: 0 0 0.5rem; font-size: 0.875rem; font-weight: 600;"&gt;Build Amazing Sites&lt;/h3&gt;
+  &lt;p style="margin: 0 0 1rem; color: #64748b;"&gt;Fast, responsive components&lt;/p&gt;
+  &lt;button style="background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white; padding: 0.375rem 0.75rem; border: none; border-radius: 4px;"&gt;Get Started&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+
+                <!-- Hero 2: Compact Stats -->
+                <div class="component-card">
+                    <h3><i class="fas fa-chart-line text-xs"></i> Hero 2: Stats</h3>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem;">
+                            <div style="background: #1e293b; color: white; padding: 1rem; border-radius: 4px;">
+                                <div style="display: flex; justify-content: space-around; text-align: center;">
+                                    <div>
+                                        <div style="font-size: 1rem; font-weight: 600;">10K+</div>
+                                        <div style="font-size: 0.7rem; opacity: 0.7;">Users</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 1rem; font-weight: 600;">99%</div>
+                                        <div style="font-size: 0.7rem; opacity: 0.7;">Uptime</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 1rem; font-weight: 600;">24/7</div>
+                                        <div style="font-size: 0.7rem; opacity: 0.7;">Support</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="background: #1e293b; color: white; padding: 1rem; border-radius: 4px;"&gt;
+  &lt;div style="display: flex; justify-content: space-around; text-align: center;"&gt;
+    &lt;div&gt;
+      &lt;div style="font-size: 1rem; font-weight: 600;"&gt;10K+&lt;/div&gt;
+      &lt;div style="font-size: 0.7rem; opacity: 0.7;"&gt;Users&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;div style="font-size: 1rem; font-weight: 600;"&gt;99%&lt;/div&gt;
+      &lt;div style="font-size: 0.7rem; opacity: 0.7;"&gt;Uptime&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;div style="font-size: 1rem; font-weight: 600;"&gt;24/7&lt;/div&gt;
+      &lt;div style="font-size: 0.7rem; opacity: 0.7;"&gt;Support&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARDS TAB -->
+        <div id="cards" class="tab-content">
+            <div class="component-grid">
+                <!-- Card 1: Compact Product -->
+                <div class="component-card">
+                    <h3><i class="fas fa-box text-xs"></i> Card 1: Product</h3>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem;">
+                            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;">
+                                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6, #3b82f6); border-radius: 4px; margin-bottom: 0.5rem;"></div>
+                                <h4 style="margin: 0 0 0.25rem; font-weight: 600;">Premium Plan</h4>
+                                <p style="margin: 0 0 0.5rem; color: #64748b; font-size: 0.7rem;">All features included</p>
+                                <button style="width: 100%; background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white; padding: 0.375rem; border: none; border-radius: 4px; font-size: 0.7rem;">Get Started</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;"&gt;
+  &lt;div style="width: 40px; height: 40px; background: linear-gradient(135deg, #8b5cf6, #3b82f6); border-radius: 4px; margin-bottom: 0.5rem;"&gt;&lt;/div&gt;
+  &lt;h4 style="margin: 0 0 0.25rem; font-weight: 600;"&gt;Premium Plan&lt;/h4&gt;
+  &lt;p style="margin: 0 0 0.5rem; color: #64748b; font-size: 0.7rem;"&gt;All features included&lt;/p&gt;
+  &lt;button style="width: 100%; background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white; padding: 0.375rem; border: none; border-radius: 4px;"&gt;Get Started&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+
+                <!-- Card 2: Compact Stats -->
+                <div class="component-card">
+                    <h3><i class="fas fa-chart-bar text-xs"></i> Card 2: Stats</h3>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem;">
+                            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-weight: 600;">Revenue</span>
+                                    <span style="color: #10b981; font-size: 0.7rem;">+12%</span>
+                                </div>
+                                <div style="font-size: 1.25rem; font-weight: 700;">$24,580</div>
+                                <div style="height: 4px; background: #e2e8f0; border-radius: 2px; margin-top: 0.5rem; overflow: hidden;">
+                                    <div style="width: 75%; height: 100%; background: linear-gradient(135deg, #8b5cf6, #3b82f6);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;"&gt;
+  &lt;div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"&gt;
+    &lt;span style="font-weight: 600;"&gt;Revenue&lt;/span&gt;
+    &lt;span style="color: #10b981;"&gt;+12%&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div style="font-size: 1.25rem; font-weight: 700;"&gt;$24,580&lt;/div&gt;
+  &lt;div style="height: 4px; background: #e2e8f0; border-radius: 2px; margin-top: 0.5rem;"&gt;
+    &lt;div style="width: 75%; height: 100%; background: linear-gradient(135deg, #8b5cf6, #3b82f6);"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FEATURES TAB -->
+        <div id="features" class="tab-content">
+            <div class="component-grid">
+                <!-- Feature Grid -->
+                <div class="component-card">
+                    <h3><i class="fas fa-th text-xs"></i> Feature Grid</h3>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem;">
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 4px; padding: 0.5rem; text-align: center;">
+                                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #f0abfc, #a78bfa); border-radius: 4px; margin: 0 auto 0.25rem; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-bolt" style="color: white; font-size: 12px;"></i>
+                                    </div>
+                                    <div style="font-weight: 600; font-size: 0.7rem;">Fast</div>
+                                </div>
+                                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 4px; padding: 0.5rem; text-align: center;">
+                                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #7dd3fc, #38bdf8); border-radius: 4px; margin: 0 auto 0.25rem; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-shield-alt" style="color: white; font-size: 12px;"></i>
+                                    </div>
+                                    <div style="font-weight: 600; font-size: 0.7rem;">Secure</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;"&gt;
+  &lt;div style="background: white; border: 1px solid #e2e8f0; border-radius: 4px; padding: 0.5rem; text-align: center;"&gt;
+    &lt;div style="width: 32px; height: 32px; background: linear-gradient(135deg, #f0abfc, #a78bfa); border-radius: 4px; margin: 0 auto 0.25rem;"&gt;&lt;/div&gt;
+    &lt;div style="font-weight: 600;"&gt;Fast&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style="background: white; border: 1px solid #e2e8f0; border-radius: 4px; padding: 0.5rem; text-align: center;"&gt;
+    &lt;div style="width: 32px; height: 32px; background: linear-gradient(135deg, #7dd3fc, #38bdf8); border-radius: 4px; margin: 0 auto 0.25rem;"&gt;&lt;/div&gt;
+    &lt;div style="font-weight: 600;"&gt;Secure&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORMS TAB -->
+        <div id="forms" class="tab-content">
+            <div class="component-grid">
+                <!-- Form 1: Compact Login -->
+                <div class="component-card">
+                    <h3><i class="fas fa-sign-in-alt text-xs"></i> Form 1: Login</h3>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem;">
+                            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;">
+                                <div style="margin-bottom: 0.5rem;">
+                                    <label style="display: block; margin-bottom: 0.25rem; font-weight: 500;">Email</label>
+                                    <input type="email" placeholder="you@example.com" style="width: 100%; padding: 0.375rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.7rem;">
+                                </div>
+                                <div style="margin-bottom: 0.75rem;">
+                                    <label style="display: block; margin-bottom: 0.25rem; font-weight: 500;">Password</label>
+                                    <input type="password" placeholder="••••••••" style="width: 100%; padding: 0.375rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.7rem;">
+                                </div>
+                                <button style="width: 100%; background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white; padding: 0.375rem; border: none; border-radius: 4px; font-size: 0.7rem;">Sign In</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;"&gt;
+  &lt;div style="margin-bottom: 0.5rem;"&gt;
+    &lt;label style="display: block; margin-bottom: 0.25rem; font-weight: 500;"&gt;Email&lt;/label&gt;
+    &lt;input type="email" placeholder="you@example.com" style="width: 100%; padding: 0.375rem; border: 1px solid #cbd5e1; border-radius: 4px;"&gt;
+  &lt;/div&gt;
+  &lt;div style="margin-bottom: 0.75rem;"&gt;
+    &lt;label style="display: block; margin-bottom: 0.25rem; font-weight: 500;"&gt;Password&lt;/label&gt;
+    &lt;input type="password" placeholder="••••••••" style="width: 100%; padding: 0.375rem; border: 1px solid #cbd5e1; border-radius: 4px;"&gt;
+  &lt;/div&gt;
+  &lt;button style="width: 100%; background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white; padding: 0.375rem; border: none; border-radius: 4px;"&gt;Sign In&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTERS TAB -->
+        <div id="footers" class="tab-content">
+            <div class="component-grid">
+                <!-- Footer 1: Compact Basic -->
+                <div class="component-card">
+                    <h3><i class="fas fa-footer text-xs"></i> Footer 1: Basic</h3>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem;">
+                            <div style="background: #1e293b; color: white; padding: 0.75rem; border-radius: 4px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="opacity: 0.7;">© 2024 Company</span>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <span style="opacity: 0.7;">Privacy</span>
+                                        <span style="opacity: 0.7;">Terms</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="background: #1e293b; color: white; padding: 0.75rem; border-radius: 4px;"&gt;
+  &lt;div style="display: flex; justify-content: space-between;"&gt;
+    &lt;span style="opacity: 0.7;"&gt;© 2024 Company&lt;/span&gt;
+    &lt;div style="display: flex; gap: 0.5rem;"&gt;
+      &lt;span style="opacity: 0.7;"&gt;Privacy&lt;/span&gt;
+      &lt;span style="opacity: 0.7;"&gt;Terms&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+
+                <!-- Footer 2: Compact CTA -->
+                <div class="component-card">
+                    <h3><i class="fas fa-download text-xs"></i> Footer 2: CTA</h3>
+                    
+                    <div class="preview-section">
+                        <h4>Preview</h4>
+                        <div style="font-size: 0.75rem;">
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 4px; text-align: center;">
+                                <p style="margin: 0 0 0.5rem; font-weight: 500;">Ready to start?</p>
+                                <button style="background: white; color: #667eea; padding: 0.25rem 0.5rem; border: none; border-radius: 4px; font-size: 0.7rem;">Download</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <button onclick="copyCode(this)">Copy</button>
+                        <pre><code>&lt;div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 4px; text-align: center;"&gt;
+  &lt;p style="margin: 0 0 0.5rem; font-weight: 500;"&gt;Ready to start?&lt;/p&gt;
+  &lt;button style="background: white; color: #667eea; padding: 0.25rem 0.5rem; border: none; border-radius: 4px;"&gt;Download&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Compact Footer -->
+    <footer class="mt-4 py-4 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center text-xs text-slate-400">
+                <p>© 2024 Compact Component Library. MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Copy code to clipboard
+        function copyCode(button) {
+            const codeBlock = button.parentElement.querySelector('pre code');
+            const code = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                // Show notification
+                const notification = document.getElementById('copyNotification');
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + 1-6 for tabs
+            if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '6') {
+                const tabIndex = parseInt(e.key) - 1;
+                const tabs = ['headers', 'hero', 'cards', 'features', 'forms', 'footers'];
+                if (tabs[tabIndex]) {
+                    switchTab(tabs[tabIndex]);
+                    e.preventDefault();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

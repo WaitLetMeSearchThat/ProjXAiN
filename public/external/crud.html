@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic CRUD Process Timeline</title>
+    <!-- Load Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind configuration for custom gradient colors
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary-light': '#3b82f6', // Blue-500
+                        'secondary-light': '#10b981', // Emerald-500
+                        'primary-dark': '#4f46e5', // Indigo-600
+                        'secondary-dark': '#f97316', // Orange-500
+                        'primary-green': '#10b981', // Emerald-500
+                        'secondary-green': '#059669', // Emerald-600
+                        'primary-purple': '#8b5cf6', // Violet-500
+                        'secondary-purple': '#c026d3', // Fuchsia-600
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base styles for the timeline line */
+        .wrap {
+            position: relative;
+            padding: 0 0 0 50%;
+        }
+
+        .wrap::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            /* Default line style for light theme */
+            background: rgba(107, 114, 128, 0.3); /* Gray-500/30 */
+            margin-left: -2px;
+        }
+
+        /* --- Theme Variables and Styles --- */
+        body {
+            transition: background-color 0.5s, color 0.5s;
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+            color: #1f2937;
+        }
+
+        /* Light Theme (Default) */
+        .light-theme .rev {
+            background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+            color: #1f2937;
+        }
+
+        /* Dark Theme */
+        .dark-theme {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }z`mnpm
+        .dark-theme .rev {
+            background: linear-gradient(135deg, #374151 0%, #111827 100%);
+            color: #f3f4f6;
+        }
+        .dark-theme .title, .dark-theme .paragraph, .dark-theme .timeline-box, .dark-theme .dot h1 {
+            color: #f3f4f6 !important;
+        }
+        .dark-theme .border-gray-300 {
+             border-color: #4b5563; /* Darker line color */
+        }
+        .dark-theme .bg-green-50, .dark-theme .bg-blue-50, .dark-theme .bg-orange-50, .dark-theme .bg-red-50 {
+            background-color: #374151 !important;
+        }
+        .dark-theme .cards {
+            background-color: #111827;
+        }
+
+        /* Green Theme */
+        .green-theme .rev {
+            background: linear-gradient(135deg, #d1fae5 0%, #10b981 100%);
+            color: #065f46;
+        }
+        .green-theme .title, .green-theme .paragraph, .green-theme .dot h1 {
+            color: #065f46 !important;
+        }
+        .green-theme .cards {
+            background-color: #f0fdf4;
+            color: #065f46;
+        }
+
+        /* Purple Theme */
+        .purple-theme .rev {
+            background: linear-gradient(135deg, #ede9fe 0%, #8b5cf6 100%);
+            color: #4c1d95;
+        }
+        .purple-theme .title, .purple-theme .paragraph, .purple-theme .dot h1 {
+            color: #4c1d95 !important;
+        }
+        .purple-theme .cards {
+            background-color: #f5f3ff;
+            color: #4c1d95;
+        }
+
+        /* Responsive Timeline Dot Position Fix (needed because the timeline is centered) */
+        .right-timeline .dot {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* The timeline card positioning on desktop */
+        @media (min-width: 1024px) {
+            .wrap::before {
+                left: 50%;
+            }
+            .right-timeline {
+                justify-content: flex-end;
+            }
+            .right-timeline .dot {
+                left: unset;
+                transform: translateX(0);
+                margin-left: -2px;
+            }
+            .right-timeline .card-width {
+                margin-right: -1rem; /* Adjust overlap */
+            }
+            .left-timeline {
+                justify-content: flex-start;
+            }
+            .left-timeline .card-width {
+                margin-left: -1rem; /* Adjust overlap */
+            }
+            .card-width {
+                width: 45%;
+            }
+        }
+
+        /* Hide the card spacer on mobile/tablet */
+        @media (max-width: 1023px) {
+            .spacer {
+                display: none;
+            }
+            .card-width {
+                width: 100%;
+                margin: 0 !important;
+            }
+        }
+
+        /* Custom Modal Transition */
+        .modal {
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out;
+        }
+
+    </style>
+</head>
+
+<body class="p-4 sm:p-8">
+
+    <!-- Theme Selector & Header -->
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+        <h1 class="text-4xl font-extrabold title mb-4 sm:mb-0">
+            The CRUD Data Lifecycle
+        </h1>
+        <div class="text-gray-700 flex items-center">
+            <label for="theme-selector" class="font-semibold mr-3">Theme:</label>
+            <select id="theme-selector" class="border border-gray-300 bg-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 shadow-md">
+                <option value="light">☀️ Light Gradient (Default)</option>
+                <option value="dark">🌙 Dark Gradient</option>
+                <option value="green">🟢 Green Gradient</option>
+                <option value="purple">💜 Purple Gradient</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Main Content Box -->
+    <div class="rev shadow-2xl max-w-7xl mx-auto rounded-2xl p-6 sm:p-10 lg:p-16">
+        
+        <!-- Timeline Section -->
+        <div class="mx-auto max-w-5xl">
+            <div class="pt-4 pb-12">
+                <h2 class="text-4xl font-extrabold text-center mb-12">
+                    C.R.U.D. Process Flow
+                </h2>
+            </div>
+            
+            <div class="wrap h-full">
+                <!-- Timeline Line is handled by .wrap::before -->
+
+                <!-- 1. CREATE (C) -->
+                <div id="card-create" data-crud="create" class="timeline-card mb-12 flex justify-between items-center w-full right-timeline cursor-pointer hover:shadow-xl transition duration-300 transform hover:scale-[1.01]">
+                    <div class="order-1 card-width spacer w-5/12"></div>
+                    <div class="z-20 flex items-center justify-center order-1 bg-green-600 w-10 h-10 rounded-full dot shadow-xl">
+                        <h1 class="font-bold text-white text-xl">C</h1>
+                    </div>
+                    <div class="order-1 cards rounded-lg w-5/12 p-6 card-width shadow-lg">
+                        <h3 class="mb-2 font-bold text-green-700 text-xl">1. CREATE</h3>
+                        <p class="text-sm leading-snug tracking-wide paragraph">
+                            Initiates the data lifecycle by generating and storing new records in the database.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 2. READ (R) -->
+                <div id="card-read" data-crud="read" class="timeline-card mb-12 flex justify-between flex-row-reverse items-center w-full left-timeline cursor-pointer hover:shadow-xl transition duration-300 transform hover:scale-[1.01]">
+                    <div class="order-1 card-width spacer w-5/12"></div>
+                    <div class="z-20 flex items-center justify-center order-1 bg-blue-600 w-10 h-10 rounded-full dot shadow-xl">
+                        <h1 class="font-bold text-white text-xl">R</h1>
+                    </div>
+                    <div class="order-1 cards rounded-lg w-5/12 p-6 card-width shadow-lg">
+                        <h3 class="mb-2 font-bold text-blue-700 text-xl">2. READ</h3>
+                        <p class="text-sm leading-snug tracking-wide paragraph">
+                            Retrieves and displays existing data records based on specified criteria.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 3. UPDATE (U) -->
+                <div id="card-update" data-crud="update" class="timeline-card mb-12 flex justify-between items-center w-full right-timeline cursor-pointer hover:shadow-xl transition duration-300 transform hover:scale-[1.01]">
+                    <div class="order-1 card-width spacer w-5/12"></div>
+                    <div class="z-20 flex items-center justify-center order-1 bg-yellow-600 w-10 h-10 rounded-full dot shadow-xl">
+                        <h1 class="font-bold text-white text-xl">U</h1>
+                    </div>
+                    <div class="order-1 cards rounded-lg w-5/12 p-6 card-width shadow-lg">
+                        <h3 class="mb-2 font-bold text-yellow-700 text-xl">3. UPDATE</h3>
+                        <p class="text-sm leading-snug tracking-wide paragraph">
+                            Modifies existing records, often targeting a specific entity by its identifier.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 4. DELETE (D) -->
+                <div id="card-delete" data-crud="delete" class="timeline-card mb-12 flex justify-between flex-row-reverse items-center w-full left-timeline cursor-pointer hover:shadow-xl transition duration-300 transform hover:scale-[1.01]">
+                    <div class="order-1 card-width spacer w-5/12"></div>
+                    <div class="z-20 flex items-center justify-center order-1 bg-red-600 w-10 h-10 rounded-full dot shadow-xl">
+                        <h1 class="font-bold text-white text-xl">D</h1>
+                    </div>
+                    <div class="order-1 cards rounded-lg w-5/12 p-6 card-width shadow-lg">
+                        <h3 class="mb-2 font-bold text-red-700 text-xl">4. DELETE</h3>
+                        <p class="text-sm leading-snug tracking-wide paragraph">
+                            Removes records permanently from the persistent storage system.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CRUD Map Table -->
+        <hr class="my-12 border-gray-300 max-w-5xl mx-auto">
+
+        <div class="mx-auto max-w-5xl">
+            <h3 class="text-2xl font-semibold mb-6">CRUD Mapping Overview (SQL & HTTP)</h3>
+            <table class="min-w-full shadow-xl rounded-lg overflow-hidden border border-gray-200">
+                <thead class="bg-gray-100 dark:bg-gray-700">
+                    <tr>
+                        <th class="py-3 px-4 text-left font-semibold text-gray-700 dark:text-gray-300">Operation</th>
+                        <th class="py-3 px-4 text-left font-semibold text-gray-700 dark:text-gray-300">SQL Equivalent</th>
+                        <th class="py-3 px-4 text-left font-semibold text-gray-700 dark:text-gray-300">HTTP Method</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <tr class="hover:bg-green-50 dark:hover:bg-gray-700/50">
+                        <td class="py-3 px-4">Create</td>
+                        <td class="py-3 px-4 font-mono text-sm text-green-700 dark:text-green-400">INSERT</td>
+                        <td class="py-3 px-4 font-mono text-sm text-green-700 dark:text-green-400">POST</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50 dark:hover:bg-gray-700/50">
+                        <td class="py-3 px-4">Read</td>
+                        <td class="py-3 px-4 font-mono text-sm text-blue-700 dark:text-blue-400">SELECT</td>
+                        <td class="py-3 px-4 font-mono text-sm text-blue-700 dark:text-blue-400">GET</td>
+                    </tr>
+                    <tr class="hover:bg-yellow-50 dark:hover:bg-gray-700/50">
+                        <td class="py-3 px-4">Update</td>
+                        <td class="py-3 px-4 font-mono text-sm text-yellow-700 dark:text-yellow-400">UPDATE</td>
+                        <td class="py-3 px-4 font-mono text-sm text-yellow-700 dark:text-yellow-400">PUT / PATCH</td>
+                    </tr>
+                    <tr class="hover:bg-red-50 dark:hover:bg-gray-700/50">
+                        <td class="py-3 px-4">Delete</td>
+                        <td class="py-3 px-4 font-mono text-sm text-red-700 dark:text-red-400">DELETE</td>
+                        <td class="py-3 px-4 font-mono text-sm text-red-700 dark:text-red-400">DELETE</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="crud-modal" class="modal fixed inset-0 z-50 flex items-center justify-center opacity-0 invisible" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Overlay -->
+        <div id="modal-overlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 transition-opacity"></div>
+
+        <!-- Modal Content -->
+        <div id="modal-content" class="modal-content transform scale-95 transition-all duration-300 bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden max-w-lg w-full m-4">
+            <div class="px-6 py-6 sm:px-8 sm:py-8">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-2xl font-bold leading-6 text-gray-900 dark:text-white" id="modal-title"></h3>
+                    <button type="button" id="close-modal-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <span class="sr-only">Close modal</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="mt-4 space-y-4">
+                    <p class="text-base text-gray-700 dark:text-gray-300" id="modal-detail"></p>
+                    
+                    <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border dark:border-gray-600">
+                        <p class="font-semibold text-sm text-gray-600 dark:text-gray-400 mb-2">Database Command (SQL):</p>
+                        <code class="block bg-white dark:bg-gray-800 p-3 rounded text-sm font-mono text-red-600 dark:text-red-400" id="modal-sql"></code>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border dark:border-gray-600">
+                        <p class="font-semibold text-sm text-gray-600 dark:text-gray-400 mb-2">Web API Equivalent (HTTP):</p>
+                        <code class="block bg-white dark:bg-gray-800 p-3 rounded text-sm font-mono text-blue-600 dark:text-blue-400" id="modal-http"></code>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const body = document.body;
+        const themeSelector = document.getElementById('theme-selector');
+        const timelineCards = document.querySelectorAll('.timeline-card');
+        const modal = document.getElementById('crud-modal');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDetail = document.getElementById('modal-detail');
+        const modalSql = document.getElementById('modal-sql');
+        const modalHttp = document.getElementById('modal-http');
+        const modalContent = document.getElementById('modal-content');
+
+        const THEMES = ['light', 'dark', 'green', 'purple'];
+        const CRUD_DATA = {
+            'create': {
+                title: 'CREATE (C): Insert New Data',
+                detail: 'This is the foundational step of the data lifecycle. It involves generating new data records by sending data from an application (e.g., an HTML form) to the server, which then executes an SQL **INSERT** command to store the new entity permanently in the database.',
+                sql: 'INSERT INTO table_name (col1, col2) VALUES (val1, val2);',
+                http: 'POST /api/resources'
+            },
+            'read': {
+                title: 'READ (R): Retrieve and View Data',
+                detail: 'The most common operation, responsible for fetching data from the database. It uses the SQL **SELECT** command to retrieve records, which are then formatted and displayed to the user, either as a list or a detailed view of a single entity.',
+                sql: 'SELECT * FROM table_name WHERE id = 123;',
+                http: 'GET /api/resources/123'
+            },
+            'update': {
+                title: 'UPDATE (U): Modify Existing Data',
+                detail: 'This operation modifies existing records in the database. It requires identifying the specific record, typically using a unique ID, and applying the necessary changes via the SQL **UPDATE** command. It ensures data consistency and correction over time.',
+                sql: 'UPDATE table_name SET col1 = newVal1 WHERE id = 123;',
+                http: 'PUT /api/resources/123'
+            },
+            'delete': {
+                title: 'DELETE (D): Remove Data',
+                detail: 'The final step, which permanently removes a data record from the database. This critical operation uses the SQL **DELETE** command and must always include a strict WHERE clause to prevent accidental removal of all records.',
+                sql: 'DELETE FROM table_name WHERE id = 123;',
+                http: 'DELETE /api/resources/123'
+            }
+        };
+
+        // --- Theme Logic ---
+        function setTheme(themeName) {
+            // 1. Clear all theme classes
+            body.classList.remove(...THEMES.map(t => `${t}-theme`));
+
+            // 2. Add the selected theme class
+            body.classList.add(`${themeName}-theme`);
+            
+            // 3. Update dropdown selection
+            themeSelector.value = themeName;
+        }
+
+        // Dropdown change listener
+        themeSelector.addEventListener('change', (event) => {
+            setTheme(event.target.value);
+        });
+
+        // Load theme preference on initial load
+        setTheme('light'); // Default to light
+
+        // --- Modal Logic ---
+
+        function openModal(crudKey) {
+            const data = CRUD_DATA[crudKey];
+            
+            if (!data) return;
+
+            // Populate modal content
+            modalTitle.textContent = data.title;
+            modalDetail.textContent = data.detail;
+            modalSql.textContent = data.sql;
+            modalHttp.textContent = data.http;
+
+            // Show modal with transitions
+            modal.classList.remove('invisible', 'opacity-0');
+            modal.classList.add('opacity-100');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+
+            // Set background focus style based on CRUD type
+            const colorClass = crudKey === 'create' ? 'bg-green-100' :
+                               crudKey === 'read' ? 'bg-blue-100' :
+                               crudKey === 'update' ? 'bg-yellow-100' :
+                               'bg-red-100';
+            modalContent.classList.add(colorClass);
+        }
+
+        function closeModal() {
+            // Hide modal with transitions
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+
+            // Wait for transition to finish before setting invisible
+            setTimeout(() => {
+                modal.classList.add('invisible');
+                // Clean up background style
+                modalContent.classList.remove('bg-green-100', 'bg-blue-100', 'bg-yellow-100', 'bg-red-100');
+            }, 300);
+        }
+
+        // Event listeners for timeline cards
+        timelineCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const crudKey = card.getAttribute('data-crud');
+                openModal(crudKey);
+            });
+        });
+
+        // Event listeners for closing the modal
+        closeModalBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', closeModal);
+
+        // Close modal on Escape key press
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.classList.contains('opacity-100')) {
+                closeModal();
+            }
+        });
+    });
+</script>
+</body>
+</html>
