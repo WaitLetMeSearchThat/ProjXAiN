@@ -8,7 +8,6 @@
     >
       <option class="h1  hover:rev" value="light">☀️ Light</option>
       <option class="h1  hover:rev" value="dark">🌙 Dark </option>
-      <option class="h1  hover:rev" value="green">🟢 Green </option>
     </select>
   </div>
 </template>

@@ -8,13 +8,15 @@ import { seedRBAC } from './seedRBAC.js';
 import { seedDepartments } from './seedDepartments.js';
 import { seedPrograms } from './seedPrograms.js';
 import { seedAnnouncements } from './seedAnnouncements.js';
+import { seedGradeInquiryTickets } from './seedGradeInquiryTickets.js';
 import { seedGradesFromFiles } from './seedGradesFromFiles.js';
 import { seedGradesFromSheets } from './seedGradesFromSheets.js';
+import { seedDm103FromCsv } from './seedDM103FromCsv.js';
 import { db } from './src/firebase/config.js';
 import { collection, getDocs, writeBatch } from 'firebase/firestore';
 import { COLLECTIONS } from './src/assets/constants.js';
 
-const EXTRA_COLLECTIONS = ['gradeUploads', 'serviceRequests'];
+const EXTRA_COLLECTIONS = ['gradeUploads', 'serviceRequests', 'gradeInquiryTickets'];
 
 async function clearCollection(name) {
   const colRef = collection(db, name);
@@ -64,6 +66,9 @@ async function seedAllData() {
     await seedStudents();
     console.log('Students seeded successfully');
 
+    await seedGradeInquiryTickets();
+    console.log('Grade inquiry tickets seeded successfully');
+
     await seedSubjects();
     console.log('Subjects seeded successfully');
 
@@ -81,6 +86,9 @@ async function seedAllData() {
 
     await seedGradesFromSheets();
     console.log('Grades from Sheets (grades, section, student id only) seeded successfully');
+
+    await seedDm103FromCsv('./data/dm103-final.csv');
+    console.log('DM103 grades and students (BSIS 3A-3F) seeded successfully');
 
     await seedRBAC();
     console.log('RBAC data seeded successfully');

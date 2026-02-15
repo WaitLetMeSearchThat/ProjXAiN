@@ -104,22 +104,22 @@ onUnmounted(() => {
         <!-- LOGO -->
         <RouterLink
           to="/"
-          class="text-2xl  hover:text-gray-100 mt-6 hover:bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-2 rounded-lg font-bold text-emerald-600 hover:text-indigo-600 transition"
+          class="text-2xl glass-effect  mt-6 hover:bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-2 rounded-lg font-bold text-emerald-600 hover:text-white transition"
         >
-          BCC
+          Project X
         </RouterLink>
 
         <!-- DESKTOP NAV -->
-        <nav class="hidden md:flex text-white hover:scale-110 items-center rounded-2xl shadow-2xl space-x-6   px-12 py-5 backdrop-blur-2xl ">
+        <nav class="hidden md:flex text-white bg-gradient-to-r from-emerald-700 to-emerald-200 hover:scale-110 items-center rounded-xl shadow-2xl space-x-6   px-12 py-5 backdrop-blur-2xl ">
           <RouterLink
             v-for="link in navLinks"
             :key="link.name"
             :to="link.to"
-            class="relative px-2 py-3  backdrop-blur-2xl bg-gray-300 hover:scale-110  rounded-md px-3 mt-6 text-sm font-bold transition"
+            class="relative px-4 py-2  backdrop-blur-2xl bg-gray-100 hover:scale-110  rounded-md px-3 mt-6 text-sm font-bold transition"
             :class="
               route.path === link.to
-                ? 'text-gray-800'
-                : 'text-gray-800 hover:text-indigo-700'
+                ? 'text-emerald-500'
+                : 'text-emerald-950 hover:text-indigo-700'
             "
           >
             {{ link.name }}
@@ -133,7 +133,7 @@ onUnmounted(() => {
         </nav>
 
         <!-- RIGHT SECTION -->
-        <div class="flex items-center mt-6 gap-4">
+        <div class="flex items-center glass-effect shadow-2xl p-2 rounded-lg mt-6 gap-4">
 
           <!-- AUTHENTICATED USER -->
           <template v-if="isAuthenticated">
@@ -156,7 +156,7 @@ onUnmounted(() => {
               <!-- Logout -->
               <button
                 @click="handleLogout"
-                class="text-sm text-gray-600 hover:text-red-600 transition"
+                class="text-sm text-gray-600  transition"
               >
                 Logout
               </button>
@@ -173,7 +173,7 @@ onUnmounted(() => {
               Login
             </button>
           </template>
-<div class="hover:scale-110 ">
+<div class="hover:scale-110 bg-gray-100/30 rounded-lg">
           <ThemeSelector />
 </div>
           <!-- MOBILE MENU BUTTON -->

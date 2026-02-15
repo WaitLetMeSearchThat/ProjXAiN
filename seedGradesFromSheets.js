@@ -38,6 +38,7 @@ const mapRowToGrade = (row) => {
   return {
     [GRADE_FIELDS.STUDENT_ID]: studentId,
     studentIdNormalized: normalizeStudentId(studentId),
+    studentName,
     [GRADE_FIELDS.SUBJECT_CODE]: SUBJECT_CODE_RAW,
     [GRADE_FIELDS.SUBJECT_TITLE]: CURRENT_SUBJECT?.TITLE || 'Business Process Management (Using Oracle)',
     [GRADE_FIELDS.INSTRUCTOR_ID]: CURRENT_INSTRUCTOR?.FULL_NAME || 'SANTIAGO, FELICIANO L. JR, MSIT',

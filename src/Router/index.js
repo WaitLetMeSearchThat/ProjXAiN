@@ -20,6 +20,9 @@ import Classrooms from '../views/Classrooms.vue';
 import Tools from '../views/Tools.vue';
 import StudentManagement from '../views/StudentManagement.vue';
 import CalendarView from '../views/CalendarView.vue';
+import UserProfileView from '../views/user/profile/UserProfileView.vue';
+import UserPostView from '../views/user/post/UserPostView.vue';
+import UserNotificationView from '../views/user/notification/UserNotificationView.vue';
 import { getRoleDefaultRoute } from '@/Components/roleNavigation';
 
 const routes = [
@@ -62,6 +65,9 @@ const routes = [
       { path: '', component: StudentDashboard },
       { path: 'classes', component: Classrooms },
       { path: 'grades', component: GradeInquiry, meta: { hideSidebar: false } },
+      { path: 'profile', component: UserProfileView },
+      { path: 'post', component: UserPostView },
+      { path: 'notification', component: UserNotificationView },
       { path: 'announcements', component: AnnouncementsBlog },
       { path: 'calendar', component: CalendarView }
     ]
@@ -76,6 +82,17 @@ const routes = [
       { path: 'enrollment', component: StudentManagement },
       { path: 'announcements', component: AnnouncementsBlog },
       { path: 'calendar', component: CalendarView }
+    ]
+  },
+  {
+    path: '/user',
+    component: DashboardLayout,
+    meta: { requiresAuth: true, allowedRoles: ['role_admin', 'role_instructor', 'role_student', 'role_registrar'] },
+    children: [
+      { path: '', redirect: '/user/profile' },
+      { path: 'profile', component: UserProfileView },
+      { path: 'post', component: UserPostView },
+      { path: 'notification', component: UserNotificationView }
     ]
   }
 ];

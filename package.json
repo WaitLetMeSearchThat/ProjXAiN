@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed:all": "node seedAll.js --run",
+    "seed:dm103": "node seedDM103FromCsv.js --run ./data/dm103-final.csv",
+    "seed:tickets": "node seedGradeInquiryTickets.js --run",
+    "seed:bsis-hierarchy": "node seedBSISGradeHierarchy.js --run"
   },
   "dependencies": {
     "@lottiefiles/dotlottie-vue": "^0.10.15",

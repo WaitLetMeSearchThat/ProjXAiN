@@ -34,7 +34,7 @@
                 </div>
                   <div class="my-4 text-sm sm:text-base font-semibold">New Member?</div>
                   <button @click="currentSection = 'register'; startCamera()"
-                      class="w-full hover:scale-105 hover:bg-teal-500 hover:border-purple border-2 hover:text-white py-4 bg-gray-200 p-4 text-purple-700 font-bold hover:bg-blue-50 rounded-2xl transition-all text-sm sm:text-base">
+                      class="w-full hover:scale-105 hover:bg-teal-500 hover:border-purple border-2 hover:text-white py-4 bg-gray-100 p-4 text-purple-700 font-bold hover:bg-blue-50 rounded-2xl transition-all text-sm sm:text-base">
                       Quick Register with your student ID
                     </button>
                
@@ -61,10 +61,39 @@
 
                   </div>
 
+                  <Transition name="notice-slide">
+                    <div
+                      v-if="authNotice.visible"
+                      class="rounded-2xl border px-4 py-3 flex items-start gap-3"
+                      :class="authNotice.type === 'error'
+                        ? 'bg-rose-50 border-rose-200 text-rose-800'
+                        : 'bg-emerald-50 border-emerald-200 text-emerald-800'"
+                    >
+                      <div
+                        class="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full"
+                        :class="authNotice.type === 'error' ? 'bg-rose-100' : 'bg-emerald-100'"
+                      >
+                        <svg v-if="authNotice.type === 'error'" class="h-4 w-4 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86l-7.6 13.17A2 2 0 004.4 20h15.2a2 2 0 001.73-2.97l-7.6-13.17a2 2 0 00-3.46 0z" />
+                        </svg>
+                        <svg v-else class="h-4 w-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-sm font-semibold leading-5">{{ authNotice.title }}</p>
+                        <p class="text-xs mt-0.5 opacity-90">{{ authNotice.message }}</p>
+                      </div>
+                      <button @click="clearAuthNotice" class="text-xs font-bold opacity-70 hover:opacity-100 transition">
+                        Close
+                      </button>
+                    </div>
+                  </Transition>
+
                   <form @submit.prevent="handlePasswordLogin" class="space-y-4">
                     <div class="group">
                       <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Username or Email</label>
-                      <input v-model="loginForm.email" type="text" required placeholder="juan.delacruz@email.com"
+                      <input v-model="loginForm.email" type="text" required placeholder="yourmailregistered@mail.com"
                         class="w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium mt-2" />
                     </div>
                     <div class="group">
@@ -228,6 +257,12 @@ const emit = defineEmits(['close', 'login-success']);
 
 const currentSection = ref('login');
 const showSuccess = ref(false);
+const authNotice = ref({
+  visible: false,
+  type: 'error',
+  title: '',
+  message: ''
+});
 const loginMode = ref('student');
 const isLoading = ref(false);
 const ocrLoading = ref(false);
@@ -250,6 +285,31 @@ const STUDENT_ROLE = 'role_student';
 const UNVERIFIED_ROLE = 'users-notverified';
 const ID_CROP = { x: 0.58, y: 0.50, w: 0.36, h: 0.16 };
 const OCR_FILTER = { brightness: 1.1, contrast: 1.4, saturation: 1.3, hue: -5 };
+
+const showAuthNotice = (type, title, message) => {
+  authNotice.value = { visible: true, type, title, message };
+};
+
+const clearAuthNotice = () => {
+  authNotice.value.visible = false;
+};
+
+const toFriendlyAuthMessage = (errorText) => {
+  const normalized = String(errorText || '').toLowerCase();
+  if (normalized.includes('auth/invalid-login-credentials')) {
+    return 'Invalid email or password. Please check your credentials and try again.';
+  }
+  if (normalized.includes('auth/user-not-found')) {
+    return 'No account was found for this email.';
+  }
+  if (normalized.includes('auth/wrong-password')) {
+    return 'Incorrect password. Please try again.';
+  }
+  if (normalized.includes('auth/too-many-requests')) {
+    return 'Too many failed attempts. Please wait a moment before trying again.';
+  }
+  return 'Unable to sign in right now. Please try again.';
+};
 
 const toEmailLocalPart = (name) => {
   const normalized = (name || '')
@@ -332,19 +392,22 @@ const preprocessImage = (src) => {
 // Auth Handlers
 const handleGoogleSignIn = async () => {
   isLoading.value = true;
+  clearAuthNotice();
   try {
     if (loginMode.value === 'faculty' && loginFacultyCode.value.trim() !== FACULTY_CODE) {
-      alert("Invalid faculty code.");
+      showAuthNotice('error', 'Login failed', 'Invalid faculty code.');
       return;
     }
     const result = await loginWithGoogle();
     if (result.success) {
       await waitForAuthState();
       const resolvedRole = role.value || userProfile.value?.role || '';
+      showAuthNotice('success', 'Login successful', 'Your account is now signed in.');
       router.push(getRoleDefaultRoute(resolvedRole));
       showSuccess.value = true;
       emit('login-success');
-      emit('close');
+    } else {
+      showAuthNotice('error', 'Login failed', toFriendlyAuthMessage(result.error));
     }
   } finally {
     isLoading.value = false;
@@ -353,21 +416,22 @@ const handleGoogleSignIn = async () => {
 
 const handlePasswordLogin = async () => {
   isLoading.value = true;
+  clearAuthNotice();
   try {
     if (loginMode.value === 'faculty' && loginFacultyCode.value.trim() !== FACULTY_CODE) {
-      alert("Invalid faculty code.");
+      showAuthNotice('error', 'Login failed', 'Invalid faculty code.');
       return;
     }
     const result = await login(loginForm.email, loginForm.password);
     if (result.success) {
       await waitForAuthState();
       const resolvedRole = role.value || userProfile.value?.role || '';
+      showAuthNotice('success', 'Login successful', 'Your account is now signed in.');
       router.push(getRoleDefaultRoute(resolvedRole));
       showSuccess.value = true;
       emit('login-success');
-      emit('close');
     } else {
-      alert(result.error || "Login failed. Check credentials.");
+      showAuthNotice('error', 'Login failed', toFriendlyAuthMessage(result.error));
     }
   } finally {
     isLoading.value = false;
@@ -524,20 +588,26 @@ const handleClose = () => {
   registrationForm.facultyCode = '';
   extractedData.value = null;
   showSuccess.value = false;
+  clearAuthNotice();
   emit('close');
 };
 
 const handleSuccessProceed = () => {
   showSuccess.value = false;
+  clearAuthNotice();
   emit('close');
-  router.push('/');
+  const resolvedRole = role.value || userProfile.value?.role || '';
+  router.push(getRoleDefaultRoute(resolvedRole));
 };
 
 watch(
   () => props.isOpen,
   (isOpen) => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
-    if (!isOpen) showSuccess.value = false;
+    if (!isOpen) {
+      showSuccess.value = false;
+      clearAuthNotice();
+    }
   }
 );
 
@@ -564,6 +634,16 @@ onUnmounted(stopCamera);
 .form-transition-leave-to {
   opacity: 0;
   transform: translateX(-20px);
+}
+
+.notice-slide-enter-active,
+.notice-slide-leave-active {
+  transition: all 0.2s ease;
+}
+.notice-slide-enter-from,
+.notice-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 @keyframes swing {

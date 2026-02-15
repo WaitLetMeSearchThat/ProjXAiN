@@ -5,6 +5,9 @@ import {
   COLLECTIONS,
   GRADE_FIELDS,
   GRADE_REMARKS,
+  PROGRAM_CODES,
+  YEAR_LEVELS,
+  STUDENT_STATUS,
   SEMESTERS,
   CURRENT_SUBJECT,
   CURRENT_INSTRUCTOR
@@ -13,6 +16,7 @@ import {
 const DEFAULT_CSV_PATH = './data/dm103-final.csv';
 const SUBJECT_CODE_RAW = 'DM 103';
 const SUBJECT_CODE_NORMALIZED = SUBJECT_CODE_RAW.replace(/\s+/g, '').toUpperCase();
+const DM103_SECTION_PATTERN = /^BSIS\s*3([A-F])$/i;
 
 const toNumber = (value) => {
   if (value === null || value === undefined) return 0;
@@ -23,6 +27,28 @@ const toNumber = (value) => {
 };
 
 const normalizeStudentId = (value) => String(value || '').replace(/\s+/g, '').toUpperCase();
+
+const parseStudentName = (fullName) => {
+  const text = String(fullName || '').trim().replace(/\s+/g, ' ');
+  if (!text) {
+    return { fullName: '', firstName: '', middleName: '', lastName: '' };
+  }
+  const parts = text.split(' ');
+  const lastName = parts[0] || '';
+  const firstName = parts[1] || '';
+  const middleName = parts.slice(2).join(' ');
+  return {
+    fullName: text,
+    firstName,
+    middleName,
+    lastName
+  };
+};
+
+const deriveSectionLetter = (programYearSection) => {
+  const match = String(programYearSection || '').trim().match(DM103_SECTION_PATTERN);
+  return match ? match[1].toUpperCase() : '';
+};
 
 const pickFinalGrade = (row) => {
   const adj97 = toNumber(row.INTERNAL_ADJUSTMENT_97);
@@ -82,6 +108,32 @@ const mapRowToGrade = (row) => {
       projectTitle: String(row.PROJECT_TITLE || '').trim(),
       statusNotes: String(row.STATUS_NOTES || '').trim()
     }
+  };
+};
+
+const mapRowToStudent = (row) => {
+  const studentId = String(row.ID_NUMBER || '').trim();
+  const sectionRaw = String(row.SECTION || '').trim();
+  const section = deriveSectionLetter(sectionRaw);
+  if (!studentId || !section) return null;
+
+  const parsedName = parseStudentName(row.STUDENT_NAME);
+  const studentIdForEmail = normalizeStudentId(studentId).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  return {
+    studentId,
+    fullName: parsedName.fullName,
+    firstName: parsedName.firstName,
+    middleName: parsedName.middleName,
+    lastName: parsedName.lastName,
+    extensionName: '',
+    email: `${studentIdForEmail}@bcc.edu.ph`,
+    program: PROGRAM_CODES.BSIS,
+    yearLevel: YEAR_LEVELS.THIRD_YEAR,
+    section,
+    status: STUDENT_STATUS.REGULAR,
+    isEnrolled: true,
+    updatedAt: new Date()
   };
 };
 
@@ -157,7 +209,35 @@ async function seedDm103FromCsv(filePath) {
   try {
     console.log(`Reading DM103 CSV: ${filePath}`);
     const rows = parseCsvRows(filePath);
-    const grades = rows.map(mapRowToGrade).filter((row) => row.studentId);
+    const dm103Rows = rows.filter((row) => DM103_SECTION_PATTERN.test(String(row.SECTION || '').trim()));
+    const grades = dm103Rows.map(mapRowToGrade).filter((row) => row.studentId);
+
+    const studentsById = new Map();
+    dm103Rows.forEach((row) => {
+      const student = mapRowToStudent(row);
+      if (!student?.studentId) return;
+      studentsById.set(student.studentId, student);
+    });
+    const students = Array.from(studentsById.values());
+
+    console.log(`Upserting ${students.length} DM103 students into "${COLLECTIONS.STUDENTS}"...`);
+    const studentBatches = chunkArray(students, 450).map((chunk) => {
+      const batch = writeBatch(db);
+      chunk.forEach((student) => {
+        const docRef = doc(db, COLLECTIONS.STUDENTS, student.studentId);
+        batch.set(
+          docRef,
+          {
+            ...student,
+            createdAt: new Date()
+          },
+          { merge: true }
+        );
+      });
+      return batch.commit();
+    });
+    await Promise.all(studentBatches);
+    console.log(`Upserted ${students.length} student records for DM103 sections 3A-3F.`);
 
     console.log(`Found ${grades.length} rows. Deleting existing DM103 grades...`);
     const deletedCount = await deleteExistingDm103Grades();

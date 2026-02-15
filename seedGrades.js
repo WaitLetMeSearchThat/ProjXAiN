@@ -20,6 +20,7 @@ if (sampleStudent && sampleSubject && sampleInstructor) {
 
   const gradeRecord = {
     [GRADE_FIELDS.STUDENT_ID]: sampleStudent.studentId,
+    studentName: sampleStudent.fullName,
     [GRADE_FIELDS.SUBJECT_CODE]: sampleSubject.code,
     [GRADE_FIELDS.SUBJECT_TITLE]: sampleSubject.title,
     [GRADE_FIELDS.INSTRUCTOR_ID]: sampleInstructor.instructorId,
@@ -62,6 +63,7 @@ for (const student of sampleStudents) {
     // Create grade record using constants
     const gradeRecord = {
       [GRADE_FIELDS.STUDENT_ID]: student.studentId,
+      studentName: student.fullName,
       [GRADE_FIELDS.SUBJECT_CODE]: subject.code,
       [GRADE_FIELDS.SUBJECT_TITLE]: subject.title,
       [GRADE_FIELDS.INSTRUCTOR_ID]: instructor.instructorId,

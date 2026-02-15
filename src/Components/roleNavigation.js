@@ -59,9 +59,15 @@ const CalendarIcon = icon([
   h('path', { d: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' })
 ])
 
+const ProfileIcon = icon([
+  h('path', { d: 'M20 21a8 8 0 0 0-16 0' }),
+  h('circle', { cx: '12', cy: '7', r: '4' })
+])
+
 export const ROLE_NAVIGATION = {
   role_admin: [
     { label: 'Overview', to: '/admin', icon: DashboardIcon, description: 'System summary and admin controls.' },
+    { label: 'User Profile', to: '/user/profile', icon: ProfileIcon, description: 'Manage your profile, posts, and notifications.' },
     { label: 'Student Management', to: '/admin/students', icon: UsersIcon, description: 'Manage students, grades, and subjects.' },
     { label: 'Announcements', to: '/admin/announcements', icon: AnnouncementsIcon, description: 'Post and manage campus updates.' },
     { label: 'Tools', to: '/admin/tools', icon: ToolsIcon, description: 'Utilities and system tools.' },
@@ -69,6 +75,7 @@ export const ROLE_NAVIGATION = {
   ],
   role_instructor: [
     { label: 'Overview', to: '/faculty', icon: DashboardIcon, description: 'Teaching overview and schedules.' },
+    { label: 'User Profile', to: '/user/profile', icon: ProfileIcon, description: 'Manage your profile, posts, and notifications.' },
     { label: 'Classes', to: '/faculty/classes', icon: ClassesIcon, description: 'Your sections and classroom updates.' },
     { label: 'Grades', to: '/faculty/grades', icon: GradesIcon, description: 'Review and encode grades.' },
     { label: 'Announcements', to: '/faculty/announcements', icon: AnnouncementsIcon, description: 'Campus updates and notices.' },
@@ -76,6 +83,7 @@ export const ROLE_NAVIGATION = {
   ],
   role_student: [
     { label: 'Overview', to: '/student', icon: DashboardIcon, description: 'Your academic summary.' },
+    { label: 'User Profile', to: '/student/profile', icon: ProfileIcon, description: 'Manage your profile, posts, and notifications.' },
     { label: 'Grades', to: '/student/grades', icon: GradesIcon, description: 'Check grades and submit inquiries.' },
     { label: 'Classes', to: '/student/classes', icon: ClassesIcon, description: 'Enrolled subjects and rooms.' },
     { label: 'Announcements', to: '/student/announcements', icon: AnnouncementsIcon, description: 'Campus updates and reminders.' },
@@ -83,6 +91,7 @@ export const ROLE_NAVIGATION = {
   ],
   role_registrar: [
     { label: 'Overview', to: '/registrar', icon: DashboardIcon, description: 'Enrollment and records overview.' },
+    { label: 'User Profile', to: '/user/profile', icon: ProfileIcon, description: 'Manage your profile, posts, and notifications.' },
     { label: 'Student Records', to: '/registrar/records', icon: RecordsIcon, description: 'Maintain student records.' },
     { label: 'Grades', to: '/registrar/records?tab=grades', icon: GradesIcon, description: 'View submitted grades.' },
     { label: 'Enrollment', to: '/registrar/enrollment', icon: UsersIcon, description: 'Process enrollment requests.' },

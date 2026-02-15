@@ -330,13 +330,9 @@ const profileForm = reactive({
 })
 
 const openProfile = () => {
-  profileForm.studentId = userProfile.value?.studentId || localStorage.getItem('studentId') || ''
-  profileForm.fullName = userProfile.value?.fullName || user.value?.displayName || ''
-  profileForm.email = userProfile.value?.email || user.value?.email || ''
-  profileForm.program = userProfile.value?.program || ''
-  profileForm.yearLevel = userProfile.value?.yearLevel || ''
-  profileForm.section = userProfile.value?.section || ''
-  showProfile.value = true
+  const profileRoute = resolvedRole.value === 'role_student' ? '/student/profile' : '/user/profile'
+  router.push(profileRoute)
+  isDrawerOpen.value = false
 }
 
 const handleAvatar = (e) => {

@@ -15,7 +15,7 @@
       <input
         v-model="searchQuery"
         type="text"
-        placeholder="Search by student ID or subject..."
+        placeholder="Search by student ID, name, or subject..."
         class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <select
@@ -94,6 +94,7 @@
               <thead class="bg-slate-50">
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Student ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Student Name</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Midterm</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Final</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Final Grade</th>
@@ -109,6 +110,9 @@
                 >
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                     {{ grade.studentId }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
+                    {{ grade.studentName || '-' }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                     {{ grade.midtermGrade || '-' }}
@@ -186,6 +190,7 @@ const filteredGrades = computed(() => {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(grade =>
       grade.studentId.toLowerCase().includes(query) ||
+      String(grade.studentName || '').toLowerCase().includes(query) ||
       grade.subjectCode.toLowerCase().includes(query) ||
       grade.subjectTitle.toLowerCase().includes(query)
     )

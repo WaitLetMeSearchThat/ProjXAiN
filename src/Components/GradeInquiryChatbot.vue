@@ -20,7 +20,7 @@ The Only Limitation is our Imagination.
         </div>
       </div>
 
-      <div class="relative bg-slate-300 border-2 glass-effect h-full p-6 sm:p-8">
+      <div class="relative bg-slate-300 border-2 glass-effect h-full  sm:p-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-7">
           <!-- Column 1: Chatbox -->
           <div class="space-y-6 lg:col-span-2">
@@ -33,84 +33,141 @@ The Only Limitation is our Imagination.
                 <div class="flex flex-wrap gap-2">
                   <button
                     class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                    @click="handleServiceRequest('Certificate of Grades')"
+                    @click="selectTicketService('Certificate of Grades')"
                   >
                     Certificate of Grades
                   </button>
                   <button
                     class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                    @click="handleServiceRequest('Transcript of Records (TOR)')"
+                    @click="selectTicketService('Transcript of Records (TOR)')"
                   >
                     Transcript of Records
                   </button>
                   <button
                     class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                    @click="handleServiceRequest('Diploma Request')"
+                    @click="selectTicketService('Diploma Request')"
                   >
                     Diploma Request
                   </button>
                   <button
                     class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                    @click="handleServiceRequest('Certification / Good Moral')"
+                    @click="selectTicketService('Certification / Good Moral')"
                   >
                     Certification / Good Moral
+                  </button>
+                  <button
+                    class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    @click="selectTicketService('Grade Assessment')"
+                  >
+                    Grade Assessment
                   </button>
                 </div>
               </div>
             </div>
-            <div class="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-6 min-h-[320px] shadow-sm">
+            <div class="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-6 min-h-[420px] shadow-sm">
               <div class="absolute inset-0 opacity-40">
                 <div class="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-blue-200 blur-2xl"></div>
                 <div class="absolute bottom-6 left-6 h-32 w-32 rounded-full bg-amber-200 blur-2xl"></div>
-                <div class="absolute top-20 left-1/3 h-24 w-24 rounded-full bg-emerald-200 blur-2xl"></div>
+                <div class="absolute  left-1/3 h-24 w-24 rounded-full bg-emerald-200 blur-2xl"></div>
               </div>
-              <div class="relative h-full w-full z-10">
-                <div class="h-56 relative pb-24">
+              <div class="relative h-full w-full z-10 flex flex-col">
+                <div ref="chatFeedRef" class="h-56 sm:h-64 overflow-y-auto overflow-x-hidden pr-1 space-y-3">
                 <div
                   v-for="(message, index) in messages"
                   :key="index"
-                  class="chat-bubble absolute"
+                  class="chat-row"
                   :class="[
-                    message.role === 'assistant' ? 'chat-bubble--ai' : 'chat-bubble--user',
-                    message.kind === 'warning' ? 'chat-bubble--warning' : '',
-                    message.kind === 'error' ? 'chat-bubble--error' : '',
-                    message.kind === 'success' ? 'chat-bubble--success' : '',
-                    index >= holdMessageStartIndex ? 'chat-bubble--hold' : ''
+                    message.role === 'user' ? 'chat-row--user' : 'chat-row--ai',
+                    index < staleMessageStartIndex ? 'chat-row--older' : ''
                   ]"
-                  :style="bubbleStyles?.[index % (bubbleStyles?.length || 1)]"
                 >
-                  <div v-if="message.role === 'user'" class="chat-bubble__row chat-bubble__row--user">
-                    <div class="chat-avatar">{{ userInitials }}</div>
-                    <span class="chat-text">{{ message.text }}</span>
-                  </div>
-                  <div v-else class="chat-bubble__row">
-                    <span class="chat-text">{{ message.text }}</span>
+                  <div
+                    class="chat-bubble"
+                    :class="[
+                      message.role === 'assistant' ? 'chat-bubble--ai' : 'chat-bubble--user',
+                      message.kind === 'warning' ? 'chat-bubble--warning' : '',
+                      message.kind === 'error' ? 'chat-bubble--error' : '',
+                      message.kind === 'success' ? 'chat-bubble--success' : ''
+                    ]"
+                    :style="getMessageBubbleStyle(message, index)"
+                  >
+                    <div v-if="message.role === 'user'" class="chat-bubble__row chat-bubble__row--user">
+                      <div class="chat-avatar">{{ userInitials }}</div>
+                      <span class="chat-text">{{ message.text }}</span>
+                    </div>
+                    <div v-else class="chat-bubble__row chat-bubble__row--ai">
+                      <div class="chat-text w-full">
+                        <span v-if="message.text">{{ message.text }}</span>
+                        <div v-if="message.tableRows?.length" class="chat-table-wrap mt-2">
+                          <table class="chat-table">
+                            <thead>
+                              <tr>
+                                <th>Subject</th>
+                                <th>Grade</th>
+                                <th>Remarks</th>
+                                <th>Term</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(row, rowIndex) in message.tableRows" :key="`${row.subject}-${rowIndex}`">
+                                <td>{{ row.subject }}</td>
+                                <td>{{ row.grade }}</td>
+                                <td>{{ row.remarks }}</td>
+                                <td>{{ row.term }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div v-if="isTyping" class="absolute bottom-2 left-4 pb-12 z-20">
+                <div v-if="conversationStep === 'await_student_id'" class="chat-row chat-row--ai">
+                  <form class="chat-inline-form" @submit.prevent="submitInlineStudentId">
+                    <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Student ID Required</label>
+                    <div class="mt-2 flex items-center gap-2">
+                      <input
+                        ref="inlineStudentIdFieldRef"
+                        v-model="inlineStudentIdInput"
+                        type="text"
+                        placeholder="e.g. 23-0073"
+                        class="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="submit"
+                        class="rounded-xl px-3 py-2 text-xs sm:text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition"
+                        :disabled="isProcessing || !inlineStudentIdInput.trim()"
+                      >
+                        Send
+                      </button>
+                    </div>
+                  </form>
+                </div>
+                <div v-if="isTyping" class="chat-row chat-row--ai">
                   <div class="typing-indicator">
                     <span class="typing-dot"></span>
                     <span class="typing-dot"></span>
                     <span class="typing-dot"></span>
                   </div>
-                </div>  </div>
-                <div class="pointer-events-none absolute grid top-6 inset-x-0 bottom-0 flex justify-center">
+                </div>
+                </div>
+                
+            <div class="pointer-events-none flex justify-center">
                   <DotLottieVue
                     ref="lottieRef"
-                    class="h-72 w-72 pt-24 opacity-60"
+                    class="h-64 overflow mb-24w-64 opacity-55"
                     :autoplay="true"
                     :loop="true"
                     src="/images/x-AI-n.json"
                   />
                
     <button
-      class="text-[10px] hidden font-semibold px-2 py-1 rounded-full bg-white/80 border border-slate-200 text-slate-600 hover:bg-white transition"
+      class="text-[10px] hidden font-semibold prounded-full bg-white/80 border border-slate-200 text-slate-600 hover:bg-white transition"
       @click="toggleLottiePlayback"
     >
       {{ isLottiePlaying ? 'Pause' : 'Play' }}
     </button>
-                </div>
-              </div>
+              </div>    </div>
             </div>
 
             <div class="grid gap-4">
@@ -154,12 +211,12 @@ The Only Limitation is our Imagination.
                     </div>
                   </div>
 
-                  <div class="flex flex-col sm:flex-row gap-3 mt-3">
                     <input
                       v-model="chatInput"
                       type="text"
                       :placeholder="chatPlaceholder"
-                      class="flex-1 px-4 py-3 rounded-2xl border-2 outline-none text-slate-800 font-semibold transition"
+                      :disabled="conversationStep === 'await_student_id'"
+                      class="mt-3 px-4 py-3 rounded-2xl border-2 outline-none text-slate-800 font-semibold transition"
                       :class="[
                         isInputRequired
                           ? 'border-emerald-400 focus:border-emerald-500 ring-1 ring-emerald-200 bg-emerald-50/40'
@@ -167,17 +224,16 @@ The Only Limitation is our Imagination.
                       ]"
                       @keydown.enter.prevent="handleChatSubmit"
                     />
-                    <button
-                      class="px-5 py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm sm:text-base hover:bg-blue-700 transition shadow-sm"
-                      @click="handleChatSubmit"
-                      :disabled="isProcessing || !chatInput?.trim?.()"
-                    >
-                      {{ isProcessing ? 'Checking...' : 'Send' }}
-                    </button>
-                  </div>
-                  <p class="text-xs text-slate-400">
+                  <button
+                    class="mt-3 px-5 py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm sm:text-base hover:bg-blue-700 transition shadow-sm"
+                    @click="handleChatSubmit"
+                    :disabled="isProcessing || !chatInput?.trim?.()"
+                  >
+                    {{ isProcessing ? 'Checking...' : 'Send' }}
+                  </button>
+                  <div class="mt-2 text-xs text-slate-400">
                     Session ID (optional): <span class="font-semibold">{{ sessionStudentId || 'Not available' }}</span>
-                  </p>
+                  </div>
                 </div>
               </div>
 
@@ -251,6 +307,123 @@ The Only Limitation is our Imagination.
             </div>
 
             <div v-if="isStudent" class="rounded-2xl border border-slate-200/70 bg-white p-4 sm:p-6 shadow-sm">
+              <h3 class="text-base sm:text-lg font-bold text-slate-800">Request Document Ticket</h3>
+              <p class="text-xs text-slate-500 mt-1">
+                Ticketing is for document requests and grade assessment. Grade inquiries and general questions are handled in chat.
+              </p>
+              <div class="mt-4 text-[11px] font-semibold uppercase tracking-widest text-slate-400">Step 1: Choose a document</div>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button
+                  v-for="option in documentTicketServices"
+                  :key="option"
+                  class="rounded-xl px-3 py-2 text-xs font-semibold transition border"
+                  :class="[
+                    ticketForm.service === option
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                  ]"
+                  @click="selectTicketService(option)"
+                >
+                  {{ option }}
+                </button>
+              </div>
+
+              <div v-if="ticketForm.service" class="mt-4 space-y-3">
+                <div class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Step 2: Fill form details</div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-500 mb-2">Request Type</div>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="option in ticketTypeOptions"
+                      :key="option"
+                      class="rounded-xl px-3 py-2 text-xs font-semibold transition border"
+                      :class="[
+                        ticketForm.requestType === option
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      ]"
+                      @click="ticketForm.requestType = option"
+                    >
+                      {{ option }}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="text-xs font-semibold text-slate-500 mb-2">Priority</div>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="option in ticketPriorityOptions"
+                      :key="option"
+                      class="rounded-xl px-3 py-2 text-xs font-semibold transition border"
+                      :class="[
+                        ticketForm.priority === option
+                          ? 'bg-amber-500 text-white border-amber-500'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      ]"
+                      @click="ticketForm.priority = option"
+                    >
+                      {{ option }}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    v-model="ticketForm.studentId"
+                    type="text"
+                    placeholder="Student ID"
+                    class="px-3 py-2 rounded-xl border border-slate-200 text-sm"
+                  />
+                  <input
+                    v-model="ticketForm.contact"
+                    type="text"
+                    placeholder="Contact number or email"
+                    class="px-3 py-2 rounded-xl border border-slate-200 text-sm"
+                  />
+                </div>
+                <input
+                  v-model="ticketForm.purpose"
+                  type="text"
+                  placeholder="Purpose / short summary"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"
+                />
+                <textarea
+                  v-model="ticketForm.comment"
+                  rows="3"
+                  placeholder="Comment (required): provide complete details of your request."
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm resize-none"
+                ></textarea>
+                <textarea
+                  v-model="ticketForm.notes"
+                  rows="2"
+                  placeholder="Additional notes (optional)"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm resize-none"
+                ></textarea>
+
+                <div class="flex gap-2">
+                  <button
+                    class="px-5 py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition shadow-sm"
+                    :disabled="isProcessing"
+                    @click="submitStudentTicketForm"
+                  >
+                    {{ isProcessing ? 'Submitting...' : 'Submit Ticket' }}
+                  </button>
+                  <button
+                    class="px-4 py-3 rounded-2xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50"
+                    type="button"
+                    @click="resetTicketForm"
+                  >
+                    Reset
+                  </button>
+                </div>
+                <div class="text-xs text-slate-500">
+                  After submit, a transaction ticket ID is generated for tracing.
+                </div>
+              </div>
+            </div>
+
+            <div v-if="isStudent" class="rounded-2xl border border-slate-200/70 bg-white p-4 sm:p-6 shadow-sm">
               <h3 class="text-base sm:text-lg font-bold text-slate-800">My Tickets</h3>
               <p class="text-xs text-slate-500 mt-1">Every request creates a ticket with a transaction ID.</p>
               <div v-if="studentTickets.length" class="mt-4 space-y-3 text-sm">
@@ -266,14 +439,25 @@ The Only Limitation is our Imagination.
                       {{ ticket.status }}
                     </span>
                   </div>
-                  <div class="text-xs text-slate-500 mt-1">Ticket ID: {{ ticket.id }}</div>
+                  <div class="text-xs text-slate-500 mt-1">Ticket ID: {{ ticket.ticketId || ticket.id }}</div>
                 </button>
               </div>
-              <div v-else class="mt-4 text-sm text-slate-500">No tickets yet.</div>
+              <div v-else class="mt-4 text-sm text-slate-500">
+                {{ isLoadingTickets ? 'Loading tickets...' : 'No tickets yet.' }}
+              </div>
             </div>
 
             <div v-if="canUploadGrades" class="rounded-2xl border border-slate-200/70 bg-white p-4 sm:p-6 shadow-sm">
-              <h3 class="text-base sm:text-lg font-bold text-slate-800">Incoming Tickets</h3>
+              <div class="flex items-center justify-between gap-3">
+                <h3 class="text-base sm:text-lg font-bold text-slate-800">Incoming Tickets</h3>
+                <button
+                  v-if="canManageTickets"
+                  class="px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition"
+                  @click="openRegistrarCreateTicket"
+                >
+                  New Ticket
+                </button>
+              </div>
               <p class="text-xs text-slate-500 mt-1">Student requests appear here with transaction IDs.</p>
               <div v-if="tickets.length" class="mt-4 space-y-3 text-sm">
                 <button
@@ -289,10 +473,12 @@ The Only Limitation is our Imagination.
                     </span>
                   </div>
                   <div class="text-xs text-slate-500 mt-1">Student ID: {{ ticket.studentId }}</div>
-                  <div class="text-xs text-slate-500">Ticket ID: {{ ticket.id }}</div>
+                  <div class="text-xs text-slate-500">Ticket ID: {{ ticket.ticketId || ticket.id }}</div>
                 </button>
               </div>
-              <div v-else class="mt-4 text-sm text-slate-500">No tickets received.</div>
+              <div v-else class="mt-4 text-sm text-slate-500">
+                {{ isLoadingTickets ? 'Loading tickets...' : 'No tickets received.' }}
+              </div>
             </div>
 
             <div v-if="canUploadGrades" class="rounded-2xl border border-dashed border-slate-300 bg-white p-4 sm:p-6 shadow-sm">
@@ -391,7 +577,55 @@ The Only Limitation is our Imagination.
               </div>
             </div>
 
-            <div v-if="prospectusRows.length" class="rounded-2xl border border-slate-200/70 bg-white p-4 sm:p-6 shadow-sm">
+            <div v-if="hasSearched && (matchedRecords.length || prospectusRows.length)" class="rounded-2xl border border-slate-200/70 bg-white p-4 sm:p-6 shadow-sm">
+              <div class="flex items-center justify-between gap-2 mb-4">
+                <h3 class="text-base sm:text-lg font-bold text-slate-800">Grade Results</h3>
+                <div class="flex items-center gap-2">
+                  <button
+                    class="rounded-xl px-3 py-2 text-xs font-semibold transition border"
+                    :class="gradeResultView === 'grades' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
+                    @click="gradeResultView = 'grades'"
+                  >
+                    Grade List
+                  </button>
+                  <button
+                    class="rounded-xl px-3 py-2 text-xs font-semibold transition border"
+                    :class="gradeResultView === 'prospectus' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
+                    @click="gradeResultView = 'prospectus'"
+                  >
+                    TOR / Prospectus
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="gradeResultView === 'grades'">
+                <div v-if="displayGrades.length" class="space-y-3">
+                  <div
+                    v-for="grade in displayGrades"
+                    :key="`${grade.subjectCode}_${grade.semester || ''}_${grade.academicYear || ''}`"
+                    class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-100"
+                  >
+                    <div>
+                      <span class="font-medium text-slate-800">{{ grade.subjectCode || 'N/A' }}</span>
+                      <span class="text-slate-500 text-sm ml-2">{{ grade.subjectTitle || 'Untitled Subject' }}</span>
+                    </div>
+                    <div class="text-right">
+                      <span :class="getGradeClass(grade.finalGrade)" class="font-bold text-lg">
+                        {{ grade.finalGrade || 'N/A' }}
+                      </span>
+                      <span :class="getRemarksClass(grade.remarks)" class="block text-xs">
+                        {{ grade.remarks || 'No Grade' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="text-sm text-slate-500">
+                  No direct grade rows were found. Switch to TOR / Prospectus view.
+                </div>
+              </div>
+            </div>
+
+            <div v-if="prospectusRows.length && gradeResultView === 'prospectus'" class="rounded-2xl border border-slate-200/70 bg-white p-4 sm:p-6 shadow-sm">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                 <h3 class="text-base sm:text-lg font-bold text-slate-800">Program Prospectus</h3>
                 <span class="text-xs text-slate-500">Subjects without grades show as N/A</span>
@@ -419,7 +653,7 @@ The Only Limitation is our Imagination.
           <div class="px-5 py-4 border-b border-slate-100 flex items-start justify-between gap-3">
             <div>
               <h3 class="text-base sm:text-lg font-bold text-slate-800">Ticket Details</h3>
-              <p class="text-xs text-slate-500 mt-1">Transaction ID: {{ selectedTicket.id }}</p>
+              <p class="text-xs text-slate-500 mt-1">Transaction ID: {{ selectedTicket.ticketId || selectedTicket.id }}</p>
             </div>
             <button class="text-slate-400 hover:text-slate-600" @click="closeTicketDetails">X</button>
           </div>
@@ -427,15 +661,88 @@ The Only Limitation is our Imagination.
             <div><span class="font-semibold">Service:</span> {{ selectedTicket.service }}</div>
             <div><span class="font-semibold">Student ID:</span> {{ selectedTicket.studentId }}</div>
             <div><span class="font-semibold">Status:</span> {{ selectedTicket.status }}</div>
-            <div><span class="font-semibold">Requested At:</span> {{ selectedTicket.createdAt }}</div>
+            <div><span class="font-semibold">Requested At:</span> {{ formatTicketDate(selectedTicket) }}</div>
             <div v-if="selectedTicket.details?.purpose"><span class="font-semibold">Purpose:</span> {{ selectedTicket.details.purpose }}</div>
             <div v-if="selectedTicket.details?.contact"><span class="font-semibold">Contact:</span> {{ selectedTicket.details.contact }}</div>
+            <div v-if="selectedTicket.details?.comment"><span class="font-semibold">Comment:</span> {{ selectedTicket.details.comment }}</div>
             <div v-if="selectedTicket.details?.notes"><span class="font-semibold">Notes:</span> {{ selectedTicket.details.notes }}</div>
             <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
               Current process: {{ selectedTicket.processNote }}
             </div>
+
+            <div v-if="canManageTickets" class="mt-3 rounded-xl border border-slate-200 bg-white p-3 space-y-3">
+              <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                {{ isCreatingTicket ? 'Create Ticket' : 'Edit Ticket' }}
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  v-model="registrarTicketForm.service"
+                  type="text"
+                  placeholder="Service"
+                  class="px-3 py-2 rounded-xl border border-slate-200 text-sm"
+                />
+                <input
+                  v-model="registrarTicketForm.studentId"
+                  type="text"
+                  placeholder="Student ID"
+                  class="px-3 py-2 rounded-xl border border-slate-200 text-sm"
+                />
+                <select
+                  v-model="registrarTicketForm.status"
+                  class="px-3 py-2 rounded-xl border border-slate-200 text-sm"
+                >
+                  <option v-for="status in registrarTicketStatusOptions" :key="status" :value="status">{{ status }}</option>
+                </select>
+                <input
+                  v-model="registrarTicketForm.contact"
+                  type="text"
+                  placeholder="Contact"
+                  class="px-3 py-2 rounded-xl border border-slate-200 text-sm"
+                />
+              </div>
+              <input
+                v-model="registrarTicketForm.purpose"
+                type="text"
+                placeholder="Purpose"
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"
+              />
+              <textarea
+                v-model="registrarTicketForm.comment"
+                rows="2"
+                placeholder="Comment"
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm resize-none"
+              ></textarea>
+              <textarea
+                v-model="registrarTicketForm.notes"
+                rows="2"
+                placeholder="Notes"
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm resize-none"
+              ></textarea>
+              <textarea
+                v-model="registrarTicketForm.processNote"
+                rows="2"
+                placeholder="Process note"
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm resize-none"
+              ></textarea>
+            </div>
           </div>
           <div class="px-5 py-4 border-t border-slate-100 flex justify-end">
+            <button
+              v-if="canManageTickets && !isCreatingTicket"
+              class="px-4 py-2 mr-2 rounded-xl bg-rose-600 text-white hover:bg-rose-700"
+              :disabled="isProcessing"
+              @click="handleDeleteTicket"
+            >
+              Delete
+            </button>
+            <button
+              v-if="canManageTickets"
+              class="px-4 py-2 mr-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+              :disabled="isProcessing"
+              @click="handleSaveTicket"
+            >
+              {{ isCreatingTicket ? 'Create' : 'Update' }}
+            </button>
             <button
               class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50"
               @click="closeTicketDetails"
@@ -449,12 +756,19 @@ The Only Limitation is our Imagination.
   </template>
 
 <script setup>
-import { ref, computed, watchEffect, onMounted } from 'vue'
+import { ref, computed, watchEffect, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { DotLottieVue } from '@lottiefiles/dotlottie-vue'
 import { useAuth } from '@/composables/useAuth'
 import { uploadGrades, getGradesByStudentId, parseGradeFile, getGradeUploads } from '@/firebase/gradeService'
 import { getStudentById } from '@/firebase/studentService'
 import { getSubjectsByProgram } from '@/firebase/subjectService'
+import {
+  createInquiryTicket,
+  subscribeRegistrarTickets,
+  subscribeStudentTickets,
+  updateInquiryTicket,
+  deleteInquiryTicket
+} from '@/firebase/ticketService'
 import ProspectusYearTable from '@/Components/ProspectusYearTable.vue'
 
 const { role, userProfile } = useAuth()
@@ -464,6 +778,7 @@ const isRegistrar = computed(() => resolvedRole.value === 'role_registrar')
 const isInstructor = computed(() => resolvedRole.value === 'role_instructor')
 const isStudent = computed(() => resolvedRole.value === 'role_student')
 const canUploadGrades = computed(() => isRegistrar.value || isInstructor.value)
+const canManageTickets = computed(() => isRegistrar.value)
 
 const messages = ref([])
 const sessionName = computed(() => {
@@ -487,16 +802,8 @@ const userInitials = computed(() => {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
 })
-const bubbleStyles = [
-  { top: '6%', left: '6%', animationDelay: '0s' },
-  { top: '14%', left: '52%', animationDelay: '1.5s' },
-  { top: '26%', left: '18%', animationDelay: '0.7s' },
-  { top: '36%', left: '60%', animationDelay: '2.2s' },
-  { top: '42%', left: '8%', animationDelay: '1.1s' },
-  { top: '46%', left: '54%', animationDelay: '2.8s' }
-]
-const pushMessage = (role, text, kind = 'default') => {
-  messages.value.push({ role, text, kind })
+const pushMessage = (role, text, kind = 'default', meta = {}) => {
+  messages.value.push({ role, text, kind, ...meta })
 }
 
 const pushNotice = async (text, kind = 'warning') => {
@@ -546,6 +853,8 @@ const successMessage = ref('')
 const isProcessing = ref(false)
 const matchedRecords = ref([])
 const prospectusRows = ref([])
+const gradeResultView = ref('grades')
+const pendingGradeView = ref('grades')
 const hasSearched = ref(false)
 const uploadHistory = ref([])
 const analysisSummary = ref({
@@ -563,15 +872,111 @@ const requestForm = ref({
   contact: '',
   notes: ''
 })
+const documentTicketServices = [
+  'Certificate of Grades',
+  'Transcript of Records (TOR)',
+  'Diploma Request',
+  'Certification / Good Moral',
+  'Grade Assessment'
+]
+const ticketTypeOptions = ['New Request', 'Follow-up', 'Correction']
+const ticketPriorityOptions = ['Low', 'Normal', 'High']
+const registrarTicketStatusOptions = ['Submitted', 'In Review', 'Processing', 'Completed', 'Rejected']
+const ticketForm = ref({
+  service: '',
+  requestType: 'New Request',
+  priority: 'Normal',
+  studentId: '',
+  contact: '',
+  purpose: '',
+  comment: '',
+  notes: ''
+})
 const selectedTicket = ref(null)
+const isCreatingTicket = ref(false)
+const registrarTicketForm = ref({
+  service: '',
+  studentId: '',
+  status: 'Submitted',
+  processNote: '',
+  purpose: '',
+  contact: '',
+  comment: '',
+  notes: ''
+})
 const lottieRef = ref(null)
 const isLottiePlaying = ref(true)
 const isTyping = ref(false)
+const chatFeedRef = ref(null)
+const inlineStudentIdFieldRef = ref(null)
+const inlineStudentIdInput = ref('')
 
-const holdMessageCount = 3
-const holdMessageStartIndex = computed(() =>
-  Math.max(0, messages.value.length - holdMessageCount)
+const freshMessageWindow = 4
+const staleMessageStartIndex = computed(() =>
+  Math.max(0, messages.value.length - freshMessageWindow)
 )
+
+const columnOffsets = [0, 6, 10, 4, 12, 8]
+const riseOffsets = [0, 2, 4, 1, 3, 5]
+
+const getMessageBubbleStyle = (message, index) => {
+  const roleSeed = message.role === 'assistant' ? 11 : 3
+  const seed = (index * 7 + roleSeed) % columnOffsets.length
+  return {
+    '--chat-offset': `${columnOffsets[seed]}px`,
+    '--chat-rise': `${riseOffsets[seed]}px`
+  }
+}
+
+const scrollChatToLatest = async () => {
+  await nextTick()
+  const el = chatFeedRef.value
+  if (!el) return
+  el.scrollTop = el.scrollHeight
+}
+
+const submitInlineStudentId = async () => {
+  const value = String(inlineStudentIdInput.value || '').trim()
+  if (!value || isProcessing.value) return
+
+  pushMessage('user', value)
+  inlineStudentIdInput.value = ''
+  chatInput.value = ''
+  enteredStudentId.value = value
+
+  await pushAssistantMessage(`Checking grades for ${enteredStudentId.value}...`)
+  await handleInquiry(pendingGradeView.value)
+  conversationStep.value = 'root'
+  pendingGradeView.value = 'grades'
+}
+
+watch(
+  [() => messages.value.length, isTyping],
+  () => {
+    scrollChatToLatest()
+  },
+  { immediate: true }
+)
+
+watch(
+  conversationStep,
+  async (step) => {
+    if (step === 'await_student_id') {
+      inlineStudentIdInput.value = enteredStudentId.value || ''
+      chatInput.value = inlineStudentIdInput.value
+      await nextTick()
+      inlineStudentIdFieldRef.value?.focus?.()
+    }
+    scrollChatToLatest()
+  },
+  { immediate: true }
+)
+
+watch(inlineStudentIdInput, (value) => {
+  if (conversationStep.value === 'await_student_id') {
+    chatInput.value = value
+  }
+})
 const isInputRequired = computed(() =>
   [
     'await_student_id',
@@ -621,8 +1026,12 @@ const resolvedStudentId = computed(() => {
 })
 
 const studentTickets = computed(() => {
-  if (!resolvedStudentId.value) return []
-  return tickets.value.filter((ticket) => ticket.studentId === resolvedStudentId.value)
+  if (!isStudent.value) return []
+  const normalizedStudentId = normalizeId(resolvedStudentId.value)
+  if (!normalizedStudentId) return []
+  return tickets.value.filter(
+    (ticket) => normalizeId(ticket.studentId) === normalizedStudentId
+  )
 })
 
 const quickOptions = computed(() => {
@@ -649,15 +1058,17 @@ const quickOptions = computed(() => {
   }
   if (conversationStep.value === 'documents') {
     return [
-      { id: 'doc_cog', label: 'Certificate of Grades', action: 'service' },
-      { id: 'doc_tor', label: 'Transcript of Records (TOR)', action: 'service' },
-      { id: 'doc_diploma', label: 'Diploma Request', action: 'service' },
-      { id: 'doc_gm', label: 'Certification / Good Moral', action: 'service' },
+      { id: 'doc_cog', label: 'Certificate of Grades', action: 'ticket_doc' },
+      { id: 'doc_tor', label: 'Transcript of Records (TOR)', action: 'ticket_doc' },
+      { id: 'doc_diploma', label: 'Diploma Request', action: 'ticket_doc' },
+      { id: 'doc_gm', label: 'Certification / Good Moral', action: 'ticket_doc' },
+      { id: 'doc_grade_assess', label: 'Grade Assessment', action: 'ticket_doc' },
       { id: 'back_docs', label: 'Back', action: 'back' }
     ]
   }
   if (conversationStep.value === 'services') {
     return [
+      { id: 'svc_prospectus', label: 'TOR / Prospectus View', action: 'show_prospectus' },
       { id: 'svc_enroll', label: 'Enrollment Assistance', action: 'info' },
       { id: 'svc_records', label: 'Student Records', action: 'info' },
       { id: 'svc_announce', label: 'Announcements', action: 'info' },
@@ -690,21 +1101,24 @@ const secondaryTabs = computed(() => {
         action: 'use_session'
       })
     }
+    options.push({ id: 'view_tor', label: 'View TOR / Prospectus', action: 'show_prospectus' })
     options.push({ id: 'enter_id', label: 'Enter student ID', action: 'enter_id' })
     options.push({ id: 'back_root', label: 'Back', action: 'back' })
     return options
   }
   if (conversationStep.value === 'documents') {
     return [
-      { id: 'doc_cog', label: 'Certificate of Grades', action: 'service' },
-      { id: 'doc_tor', label: 'Transcript of Records (TOR)', action: 'service' },
-      { id: 'doc_diploma', label: 'Diploma Request', action: 'service' },
-      { id: 'doc_gm', label: 'Certification / Good Moral', action: 'service' },
+      { id: 'doc_cog', label: 'Certificate of Grades', action: 'ticket_doc' },
+      { id: 'doc_tor', label: 'Transcript of Records (TOR)', action: 'ticket_doc' },
+      { id: 'doc_diploma', label: 'Diploma Request', action: 'ticket_doc' },
+      { id: 'doc_gm', label: 'Certification / Good Moral', action: 'ticket_doc' },
+      { id: 'doc_grade_assess', label: 'Grade Assessment', action: 'ticket_doc' },
       { id: 'back_docs', label: 'Back', action: 'back' }
     ]
   }
   if (conversationStep.value === 'services') {
     return [
+      { id: 'svc_prospectus', label: 'TOR / Prospectus View', action: 'show_prospectus' },
       { id: 'svc_enroll', label: 'Enrollment Assistance', action: 'info' },
       { id: 'svc_records', label: 'Student Records', action: 'info' },
       { id: 'svc_announce', label: 'Announcements', action: 'info' },
@@ -737,6 +1151,53 @@ const normalizeId = (value) => {
 
 const normalizeSubjectCode = (value) => {
   return String(value || '').replace(/\s+/g, '').toUpperCase()
+}
+
+const parseNumericGrade = (value) => {
+  if (value === null || value === undefined || value === '' || value === 'N/A') return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+const getGradeClass = (grade) => {
+  const numeric = parseNumericGrade(grade)
+  if (numeric === null) return 'text-slate-400'
+  if (numeric >= 80) return 'text-green-600'
+  if (numeric >= 75) return 'text-blue-600'
+  if (numeric >= 70) return 'text-orange-600'
+  return 'text-red-600'
+}
+
+const getRemarksClass = (remarks) => {
+  const normalized = String(remarks || '').toLowerCase()
+  if (normalized.includes('pass')) return 'text-green-600'
+  if (normalized.includes('fail')) return 'text-red-600'
+  return 'text-slate-500'
+}
+
+const displayGrades = computed(() =>
+  matchedRecords.value.map((grade) => ({
+    subjectCode: grade.subjectCode || grade.subject || grade.code || 'N/A',
+    subjectTitle: grade.subjectTitle || grade.title || '',
+    finalGrade: grade.finalGrade ?? grade.grade ?? 'N/A',
+    remarks: grade.remarks || 'No Grade',
+    semester: grade.semester || '',
+    academicYear: grade.academicYear || ''
+  }))
+)
+
+const formatTicketDate = (ticket) => {
+  const createdAt = ticket?.createdAt
+  if (createdAt?.toDate) {
+    return createdAt.toDate().toLocaleString()
+  }
+  if (typeof createdAt === 'string' && createdAt) {
+    return createdAt
+  }
+  if (ticket?.createdAtMillis) {
+    return new Date(ticket.createdAtMillis).toLocaleString()
+  }
+  return 'Pending timestamp'
 }
 
 const analyzeGrades = (rows) => {
@@ -792,27 +1253,135 @@ const prospectusByYear = computed(() => {
       totalUnits: buckets[year].reduce((sum, item) => sum + Number(item.units || 0), 0)
     }))
 })
-watchEffect(() => {
-  if (isStudent.value && sessionStudentId.value && !enteredStudentId.value) {
-    enteredStudentId.value = sessionStudentId.value
+
+// GPA Calculation - same as UserPageShell.vue
+const GRADE_PASSING_SCORE = 74.4
+
+const currentGradesList = computed(() => {
+  // Return grades with actual grades (not N/A)
+  return matchedRecords.value.filter(g => g.finalGrade !== null && g.finalGrade !== undefined && g.finalGrade !== 'N/A')
+})
+
+const semesterGPA = computed(() => {
+  if (!currentGradesList.value.length) return '0.00'
+  
+  let totalPoints = 0
+  let count = 0
+  
+  currentGradesList.value.forEach(grade => {
+    if (grade.finalGrade && typeof grade.finalGrade === 'number') {
+      totalPoints += grade.finalGrade
+      count++
+    }
+  })
+  
+  if (count === 0) return '0.00'
+  return (totalPoints / count).toFixed(2)
+})
+
+const gpaClass = computed(() => {
+  const gpa = parseFloat(semesterGPA.value)
+  if (gpa >= 80) return 'text-green-600'
+  if (gpa >= 75) return 'text-blue-600'
+  if (gpa >= 70) return 'text-orange-600'
+  return 'text-red-600'
+})
+
+const academicSummary = computed(() => {
+  let totalUnits = 0
+  let subjectsPassed = 0
+  let subjectsFailed = 0
+  let totalGradePoints = 0
+  let gradeCount = 0
+  
+  // Calculate from prospectusRows which has all subjects with grades
+  prospectusRows.value.forEach(grade => {
+    // Assuming each subject is roughly 3 units
+    const units = grade.units || 3
+    totalUnits += units
+    
+    if (grade.remarks === 'Passed' || (grade.grade && grade.grade !== 'N/A' && typeof grade.grade === 'number' && grade.grade >= GRADE_PASSING_SCORE)) {
+      subjectsPassed++
+      if (grade.grade && typeof grade.grade === 'number') {
+        totalGradePoints += grade.grade
+        gradeCount++
+      }
+    } else if (grade.remarks === 'Failed' || (grade.grade && grade.grade !== 'N/A' && typeof grade.grade === 'number' && grade.grade < GRADE_PASSING_SCORE)) {
+      subjectsFailed++
+    }
+  })
+  
+  const gpa = gradeCount > 0 ? totalGradePoints / gradeCount : 0
+  
+  return {
+    totalUnits,
+    subjectsPassed,
+    subjectsFailed,
+    gpa
   }
 })
 
-const ticketStorageKey = 'gradeInquiryTickets'
+watch(
+  [isStudent, sessionStudentId],
+  () => {
+    if (isStudent.value && sessionStudentId.value && !enteredStudentId.value) {
+      enteredStudentId.value = sessionStudentId.value
+    }
+    if (isStudent.value && sessionStudentId.value && !ticketForm.value.studentId) {
+      ticketForm.value.studentId = sessionStudentId.value
+    }
+  },
+  { immediate: true }
+)
 
-const loadTickets = () => {
-  try {
-    const raw = localStorage.getItem(ticketStorageKey)
-    if (!raw) return
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed)) tickets.value = parsed
-  } catch (error) {
-    // Ignore malformed storage
+const isLoadingTickets = ref(false)
+let stopTicketsSubscription = null
+
+const clearTicketSubscription = () => {
+  if (typeof stopTicketsSubscription === 'function') {
+    stopTicketsSubscription()
   }
+  stopTicketsSubscription = null
 }
 
-const saveTickets = () => {
-  localStorage.setItem(ticketStorageKey, JSON.stringify(tickets.value))
+const loadTickets = () => {
+  clearTicketSubscription()
+
+  if (isStudent.value) {
+    const studentId = normalizeId(resolvedStudentId.value)
+    if (!studentId) {
+      tickets.value = []
+      return
+    }
+    isLoadingTickets.value = true
+    stopTicketsSubscription = subscribeStudentTickets(
+      studentId,
+      (records) => {
+        tickets.value = records
+        isLoadingTickets.value = false
+      },
+      () => {
+        isLoadingTickets.value = false
+      }
+    )
+    return
+  }
+
+  if (canUploadGrades.value) {
+    isLoadingTickets.value = true
+    stopTicketsSubscription = subscribeRegistrarTickets(
+      (records) => {
+        tickets.value = records
+        isLoadingTickets.value = false
+      },
+      () => {
+        isLoadingTickets.value = false
+      }
+    )
+    return
+  }
+
+  tickets.value = []
 }
 
 const loadUploadHistory = async () => {
@@ -828,10 +1397,16 @@ onMounted(() => {
   loadTickets()
 })
 
-const generateTicketId = () => {
-  const rand = Math.floor(Math.random() * 900 + 100)
-  return `TKT-${Date.now().toString(36).toUpperCase()}-${rand}`
-}
+watch(
+  [isStudent, canUploadGrades, resolvedStudentId],
+  () => {
+    loadTickets()
+  }
+)
+
+onUnmounted(() => {
+  clearTicketSubscription()
+})
 
 const isDocumentRequest = (serviceName) => {
   const name = String(serviceName || '').toLowerCase()
@@ -841,27 +1416,100 @@ const isDocumentRequest = (serviceName) => {
     name.includes('tor') ||
     name.includes('diploma') ||
     name.includes('good moral') ||
-    name.includes('certification')
+    name.includes('certification') ||
+    name.includes('assessment')
   )
 }
 
-const buildTicket = (serviceName, details = {}) => {
-  return {
-    id: generateTicketId(),
+const createTicket = async (serviceName, details = {}) => {
+  const studentId = String(resolvedStudentId.value || '').trim()
+  if (!studentId) {
+    return { success: false, message: 'Student ID is required to create a ticket.' }
+  }
+
+  const result = await createInquiryTicket({
     service: serviceName,
-    studentId: resolvedStudentId.value || 'N/A',
-    status: 'Submitted',
-    createdAt: new Date().toLocaleString(),
-    processNote: 'Submitted. Waiting for registrar verification.',
-    details
+    studentId,
+    details,
+    createdByUid: userProfile.value?.uid || '',
+    createdByEmail: userProfile.value?.email || '',
+    createdByName: userProfile.value?.displayName || userProfile.value?.fullName || ''
+  })
+
+  if (!result.success) {
+    return { success: false, message: result.message || 'Ticket submission failed.' }
+  }
+
+  return { success: true, ticket: result.ticket }
+}
+
+const selectTicketService = (serviceName) => {
+  ticketForm.value.service = serviceName
+  if (!ticketForm.value.studentId && resolvedStudentId.value) {
+    ticketForm.value.studentId = resolvedStudentId.value
   }
 }
 
-const createTicket = (serviceName, details = {}) => {
-  const ticket = buildTicket(serviceName, details)
-  tickets.value.unshift(ticket)
-  saveTickets()
-  return ticket
+const resetTicketForm = () => {
+  ticketForm.value = {
+    service: '',
+    requestType: 'New Request',
+    priority: 'Normal',
+    studentId: sessionStudentId.value || '',
+    contact: '',
+    purpose: '',
+    comment: '',
+    notes: ''
+  }
+}
+
+const submitStudentTicketForm = async () => {
+  if (!isStudent.value) return
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  const service = String(ticketForm.value.service || '').trim()
+  const studentId = String(ticketForm.value.studentId || '').trim()
+  const comment = String(ticketForm.value.comment || '').trim()
+  if (!service) {
+    errorMessage.value = 'Please choose a request from the predefined buttons.'
+    return
+  }
+  if (!documentTicketServices.includes(service)) {
+    errorMessage.value = 'Only document requests are allowed in ticket form.'
+    return
+  }
+  if (!studentId) {
+    errorMessage.value = 'Student ID is required.'
+    return
+  }
+  if (!comment) {
+    errorMessage.value = 'Comment is required for ticket submission.'
+    return
+  }
+
+  enteredStudentId.value = studentId
+
+  isProcessing.value = true
+  const ticketResult = await createTicket(service, {
+    requestType: ticketForm.value.requestType,
+    priority: ticketForm.value.priority,
+    purpose: String(ticketForm.value.purpose || '').trim(),
+    contact: String(ticketForm.value.contact || '').trim(),
+    comment,
+    notes: String(ticketForm.value.notes || '').trim()
+  })
+  isProcessing.value = false
+
+  if (!ticketResult.success) {
+    errorMessage.value = ticketResult.message || 'Unable to submit ticket.'
+    return
+  }
+
+  const ticket = ticketResult.ticket
+  successMessage.value = `Ticket submitted. Ticket ID: ${ticket.ticketId || ticket.id}.`
+  await pushAssistantMessage(`Ticket submitted for ${service}. Transaction ID: ${ticket.ticketId || ticket.id}.`, 'success')
+  resetTicketForm()
 }
 
 const startDocumentRequest = async (serviceName) => {
@@ -873,24 +1521,133 @@ const startDocumentRequest = async (serviceName) => {
 }
 
 const finalizeDocumentRequest = async () => {
-  const ticket = createTicket(pendingServiceName.value, {
+  const ticketResult = await createTicket(pendingServiceName.value, {
     contact: requestForm.value.contact,
     purpose: requestForm.value.purpose,
     notes: requestForm.value.notes
   })
-  successMessage.value = `Request submitted. Ticket ID: ${ticket.id}`
-  await pushAssistantMessage(`Request noted for ${ticket.service}. Ticket ID: ${ticket.id}.`)
+  if (!ticketResult.success) {
+    errorMessage.value = ticketResult.message || 'Unable to submit request ticket.'
+    await pushAssistantMessage('Ticket submission failed. Please try again.', 'error')
+    return
+  }
+
+  const ticket = ticketResult.ticket
+  successMessage.value = `Request submitted. Ticket ID: ${ticket.ticketId || ticket.id}`
+  await pushAssistantMessage(`Request noted for ${ticket.service}. Ticket ID: ${ticket.ticketId || ticket.id}.`)
   pendingServiceName.value = ''
   requestForm.value = { purpose: '', contact: '', notes: '' }
   conversationStep.value = 'root'
 }
 
+const setRegistrarTicketForm = (ticket = null) => {
+  const details = ticket?.details || {}
+  registrarTicketForm.value = {
+    service: ticket?.service || '',
+    studentId: ticket?.studentId || '',
+    status: ticket?.status || 'Submitted',
+    processNote: ticket?.processNote || 'Submitted. Waiting for registrar verification.',
+    purpose: details.purpose || '',
+    contact: details.contact || '',
+    comment: details.comment || '',
+    notes: details.notes || ''
+  }
+}
+
+const openRegistrarCreateTicket = () => {
+  isCreatingTicket.value = true
+  selectedTicket.value = {
+    service: '',
+    studentId: '',
+    status: 'Submitted',
+    processNote: 'Submitted. Waiting for registrar verification.',
+    details: {}
+  }
+  setRegistrarTicketForm(selectedTicket.value)
+}
+
 const openTicketDetails = (ticket) => {
+  isCreatingTicket.value = false
   selectedTicket.value = ticket
+  setRegistrarTicketForm(ticket)
 }
 
 const closeTicketDetails = () => {
+  isCreatingTicket.value = false
   selectedTicket.value = null
+}
+
+const handleSaveTicket = async () => {
+  if (!canManageTickets.value) return
+
+  const payload = {
+    service: String(registrarTicketForm.value.service || '').trim(),
+    studentId: String(registrarTicketForm.value.studentId || '').trim(),
+    studentIdNormalized: normalizeId(registrarTicketForm.value.studentId || ''),
+    status: String(registrarTicketForm.value.status || 'Submitted'),
+    processNote: String(registrarTicketForm.value.processNote || '').trim() || 'Submitted. Waiting for registrar verification.',
+    details: {
+      purpose: String(registrarTicketForm.value.purpose || '').trim(),
+      contact: String(registrarTicketForm.value.contact || '').trim(),
+      comment: String(registrarTicketForm.value.comment || '').trim(),
+      notes: String(registrarTicketForm.value.notes || '').trim()
+    }
+  }
+
+  if (!payload.service || !payload.studentId) {
+    errorMessage.value = 'Service and student ID are required.'
+    return
+  }
+
+  isProcessing.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+  try {
+    if (isCreatingTicket.value) {
+      const created = await createInquiryTicket({
+        ...payload,
+        createdByUid: userProfile.value?.uid || '',
+        createdByEmail: userProfile.value?.email || '',
+        createdByName: userProfile.value?.displayName || userProfile.value?.fullName || ''
+      })
+      if (!created.success) {
+        errorMessage.value = created.message || 'Failed to create ticket.'
+        return
+      }
+      successMessage.value = `Ticket created. Ticket ID: ${created.ticket?.ticketId || created.id}`
+      await pushAssistantMessage(successMessage.value, 'success')
+    } else {
+      const updated = await updateInquiryTicket(selectedTicket.value?.id, payload)
+      if (!updated.success) {
+        errorMessage.value = updated.message || 'Failed to update ticket.'
+        return
+      }
+      successMessage.value = 'Ticket updated successfully.'
+      await pushAssistantMessage(successMessage.value, 'success')
+    }
+    closeTicketDetails()
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+const handleDeleteTicket = async () => {
+  if (!canManageTickets.value || !selectedTicket.value?.id) return
+  isProcessing.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+  try {
+    const result = await deleteInquiryTicket(selectedTicket.value.id)
+    if (!result.success) {
+      errorMessage.value = result.message || 'Failed to delete ticket.'
+      return
+    }
+    successMessage.value = 'Ticket deleted successfully.'
+    await pushAssistantMessage(successMessage.value, 'success')
+    closeTicketDetails()
+  } finally {
+    isProcessing.value = false
+  }
 }
 
 const toggleLottiePlayback = () => {
@@ -926,6 +1683,15 @@ const pushAssistantMessage = async (text, kind = 'default') => {
   playLottie()
   await wait(3000)
   pushMessage('assistant', text, kind)
+  isTyping.value = false
+  pauseLottie()
+}
+
+const pushAssistantTableMessage = async (text, rows = [], kind = 'default') => {
+  isTyping.value = true
+  playLottie()
+  await wait(3000)
+  pushMessage('assistant', text, kind, { tableRows: rows })
   isTyping.value = false
   pauseLottie()
 }
@@ -975,15 +1741,32 @@ const handleChatSubmit = async () => {
   if (conversationStep.value === 'await_student_id') {
     enteredStudentId.value = value
     await pushAssistantMessage(`Checking grades for ${enteredStudentId.value}...`)
-    await handleInquiry()
+    await handleInquiry(pendingGradeView.value)
     conversationStep.value = 'root'
+    pendingGradeView.value = 'grades'
     return
   }
 
   const lower = value.toLowerCase()
   if (lower.includes('grade')) {
-    conversationStep.value = 'grade_confirm'
+    pendingGradeView.value = 'grades'
     await pushAssistantMessage('Please confirm your student ID to proceed.')
+    conversationStep.value = 'await_student_id'
+    return
+  }
+
+  if (lower.includes('prospectus') || lower.includes('tor view') || lower.includes('tor / prospectus')) {
+    pendingGradeView.value = 'prospectus'
+    if (sessionStudentId.value) {
+      enteredStudentId.value = sessionStudentId.value
+      await pushAssistantMessage(`Using session ID ${enteredStudentId.value}. Opening TOR / Prospectus...`)
+      await handleInquiry('prospectus')
+    } else {
+      conversationStep.value = 'await_student_id'
+      await pushAssistantMessage('Please type your student ID to open TOR / Prospectus view.')
+      return
+    }
+    conversationStep.value = 'root'
     return
   }
 
@@ -1005,6 +1788,12 @@ const handleChatSubmit = async () => {
     return
   }
 
+  if (lower.includes('assessment')) {
+    await handleServiceRequest('Grade Assessment')
+    conversationStep.value = 'root'
+    return
+  }
+
   await pushAssistantMessage('Choose a quick option below to continue.')
 }
 
@@ -1022,8 +1811,9 @@ const handleOptionSelect = async (option) => {
   }
 
   if (option.action === 'grade') {
-    conversationStep.value = 'grade_confirm'
+    pendingGradeView.value = 'grades'
     await pushAssistantMessage('Please confirm your student ID to proceed.')
+    conversationStep.value = 'await_student_id'
     return
   }
 
@@ -1047,26 +1837,42 @@ const handleOptionSelect = async (option) => {
     }
     enteredStudentId.value = sessionStudentId.value
     await pushAssistantMessage(`Using session ID ${enteredStudentId.value}. Checking grades...`)
-    await handleInquiry()
+    await handleInquiry(pendingGradeView.value)
     conversationStep.value = 'root'
+    pendingGradeView.value = 'grades'
     return
   }
 
   if (option.action === 'enter_id') {
+    pendingGradeView.value = pendingGradeView.value || 'grades'
     conversationStep.value = 'await_student_id'
     await pushAssistantMessage('Please type your student ID to continue.')
     return
   }
 
-  if (option.action === 'service') {
+  if (option.action === 'show_prospectus') {
+    pendingGradeView.value = 'prospectus'
+    if (sessionStudentId.value) {
+      enteredStudentId.value = sessionStudentId.value
+      await pushAssistantMessage(`Using session ID ${enteredStudentId.value}. Opening TOR / Prospectus...`)
+      await handleInquiry('prospectus')
+      conversationStep.value = 'root'
+      pendingGradeView.value = 'grades'
+      return
+    }
+    conversationStep.value = 'await_student_id'
+    await pushAssistantMessage('Please type your student ID to open TOR / Prospectus view.')
+    return
+  }
+
+  if (option.action === 'ticket_doc') {
     await handleServiceRequest(option.label)
     conversationStep.value = 'root'
     return
   }
 
   if (option.action === 'info') {
-    const ticket = createTicket(option.label, { infoRequest: true })
-    await pushAssistantMessage(`Ticket ${ticket.id} created for ${option.label}.`)
+    await pushAssistantMessage(`${option.label} inquiries are handled directly in chat. Ask your question and I will assist you.`)
     conversationStep.value = 'root'
     return
   }
@@ -1105,7 +1911,7 @@ const handleFileUpload = async (event) => {
     : 'No rows detected. Please verify the file format.'
 }
 
-const handleInquiry = async () => {
+const handleInquiry = async (preferredView = 'grades') => {
   errorMessage.value = ''
   successMessage.value = ''
   matchedRecords.value = []
@@ -1117,12 +1923,16 @@ const handleInquiry = async () => {
     return
   }
 
-  if (isStudent.value) {
-    const ticket = createTicket('Grade Inquiry', { studentId: enteredStudentId.value.trim() })
-    await pushAssistantMessage(`Grade inquiry ticket created: ${ticket.id}.`)
-  }
-
   const normalizedEntered = normalizeId(enteredStudentId.value)
+  const normalizedSessionStudentId = normalizeId(sessionStudentId.value)
+
+  if (isStudent.value && normalizedSessionStudentId && normalizedEntered !== normalizedSessionStudentId) {
+    errorMessage.value = ''
+    await pushNotice(
+      'You can only view your own grades. Please use your session student ID.'
+    )
+    return
+  }
 
   isProcessing.value = true
   try {
@@ -1134,13 +1944,20 @@ const handleInquiry = async () => {
 
     matchedRecords.value = result.grades
 
-    const studentResponse = await getStudentById(enteredStudentId.value.trim())
+    const studentResponse = await getStudentById(normalizedEntered)
     if (!studentResponse.success) {
       errorMessage.value = ''
       await pushNotice(
-        'I am sorry, but you cant view other students grade other than yourself. Submit student id for reconfirmation.'
+        'Student record not found in the Student Management dataset. Please verify your student ID.'
       )
       return
+    }
+
+    if (!matchedRecords.value.every((grade) => grade.studentName)) {
+      matchedRecords.value = matchedRecords.value.map((grade) => ({
+        ...grade,
+        studentName: grade.studentName || studentResponse.student?.fullName || ''
+      }))
     }
 
     const programCode = studentResponse.student?.program
@@ -1193,6 +2010,45 @@ const handleInquiry = async () => {
     successMessage.value = matchedRecords.value.length
       ? `Found ${matchedRecords.value.length} record(s) for your student ID.`
       : 'No grade records found. Showing program subjects with N/A grades.'
+
+    if (matchedRecords.value.length) {
+      const studentName =
+        matchedRecords.value[0]?.studentName ||
+        studentResponse.student?.fullName ||
+        enteredStudentId.value
+      await pushAssistantMessage(
+        `Found ${matchedRecords.value.length} record(s) for ${studentName}. Here are the latest details:`,
+        'success'
+      )
+
+      const latestRecords = [...matchedRecords.value]
+        .sort((a, b) => {
+          const ayA = String(a.academicYear || '')
+          const ayB = String(b.academicYear || '')
+          if (ayA !== ayB) return ayB.localeCompare(ayA)
+          return String(b.semester || '').localeCompare(String(a.semester || ''))
+        })
+        .slice(0, 6)
+
+      const tableRows = latestRecords.map((grade) => {
+        const subjectCode = grade.subjectCode || grade.subject || 'N/A'
+        const title = grade.subjectTitle || grade.title || 'Untitled Subject'
+        return {
+          subject: `${subjectCode} - ${title}`,
+          grade: String(grade.finalGrade ?? grade.grade ?? 'N/A'),
+          remarks: grade.remarks || 'No Grade',
+          term: `${grade.semester || 'N/A'}, ${grade.academicYear || 'N/A'}`
+        }
+      })
+      await pushAssistantTableMessage('Latest grade records:', tableRows)
+    } else {
+      await pushAssistantMessage(
+        'No direct grade rows were found. I loaded your TOR / Prospectus subjects so you can still review your curriculum.',
+        'warning'
+      )
+    }
+
+    gradeResultView.value = preferredView === 'prospectus' ? 'prospectus' : 'grades'
   } catch (error) {
     errorMessage.value = 'Error fetching grades from database.'
   }
@@ -1248,45 +2104,63 @@ const handleUploadToDatabase = async () => {
 const handleServiceRequest = async (serviceName) => {
   if (!isStudent.value) return
   if (isDocumentRequest(serviceName)) {
-    if (conversationStep.value === 'doc_contact' || conversationStep.value === 'doc_purpose' || conversationStep.value === 'doc_notes') {
-      await pushNotice('Please finish the current document request first.')
-      return
-    }
-    if (!resolvedStudentId.value) {
-      pendingServiceName.value = serviceName
-      await pushAssistantMessage('Please enter your student ID to continue the document request.', 'error')
-      conversationStep.value = 'doc_wait_id'
-      return
-    }
-    await startDocumentRequest(serviceName)
+    selectTicketService(serviceName)
+    await pushAssistantMessage(`Selected "${serviceName}". Please complete the Request Document Ticket form in the ticket section for transaction tracing.`)
     return
   }
-  const ticket = createTicket(serviceName)
-  successMessage.value = `Request created: ${serviceName}. Ticket ID: ${ticket.id}.`
-  await pushAssistantMessage(`Request noted for ${ticket.service}. Ticket ID: ${ticket.id}.`)
+  await pushAssistantMessage(`${serviceName} is handled directly in chat. No ticket is required.`)
 }
 </script>
 
 <style scoped>
+.chat-row {
+  display: flex;
+}
+
+.chat-row--user {
+  justify-content: flex-start;
+}
+
+.chat-row--ai {
+  justify-content: flex-end;
+}
+
+.chat-row--older {
+  opacity: 0.45;
+}
+
 .chat-bubble {
-  max-width: 55%;
+  max-width: 78%;
   padding: 10px 14px;
   border-radius: 16px;
-  font-size: 12px;
-  line-height: 1.2rem;
+  font-size: 13px;
+  line-height: 1.3rem;
   box-shadow: 0 12px 26px -18px rgba(15, 23, 42, 0.6);
-  animation: floatUp 6s ease-in-out 1 forwards;
-  will-change: transform, opacity;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chat-row--user .chat-bubble {
+  margin-left: var(--chat-offset, 0px);
+  transform: translateY(calc(var(--chat-rise, 0px) * -1));
+}
+
+.chat-row--ai .chat-bubble {
+  margin-right: var(--chat-offset, 0px);
+  transform: translateY(calc(var(--chat-rise, 0px) * -1));
 }
 
 .chat-bubble__row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
 }
 
 .chat-bubble__row--user {
   justify-content: flex-start;
+}
+
+.chat-bubble__row--ai {
+  justify-content: flex-end;
 }
 
 .chat-avatar {
@@ -1306,6 +2180,30 @@ const handleServiceRequest = async (serviceName) => {
 
 .chat-text {
   display: inline-block;
+}
+
+.chat-table-wrap {
+  overflow-x: auto;
+}
+
+.chat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.chat-table th,
+.chat-table td {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.chat-table th {
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.06);
 }
 
 .chat-bubble--ai {
@@ -1337,17 +2235,50 @@ const handleServiceRequest = async (serviceName) => {
   color: #991b1b;
 }
 
-.chat-bubble--hold {
-  animation: none;
-  opacity: 1;
-  transform: translateY(0);
+.chat-inline-form {
+  width: min(360px, 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px 12px;
+  box-shadow: 0 12px 26px -18px rgba(15, 23, 42, 0.6);
 }
 
-@keyframes floatUp {
-  0% { transform: translateY(12px); opacity: 0; }
-  20% { transform: translateY(4px); opacity: 0.95; }
-  60% { transform: translateY(-6px); opacity: 0.9; }
-  100% { transform: translateY(-18px); opacity: 0; }
+.typing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #64748b;
+  animation: typingBlink 1.1s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typingBlink {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
 }
 
 </style>
