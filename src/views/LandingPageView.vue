@@ -14,9 +14,8 @@ const modalTopic = ref('')
 const modalRoute = ref('/')
 
 function openModal(topic, routePath) {
-  modalTopic.value = topic
-  modalRoute.value = routePath
-  showModal.value = true
+  // Modal and route navigation disabled for now.
+  return
 }
 
 function closeModal() {
@@ -124,9 +123,9 @@ const line3 = ref('Hub'.split(''))
         @mouseleave="onLeaveCards"
       >
         <template v-for="(card, index) in [
-          { title: 'Web Development', color: 'yellow', route: '/modules/web-development', icon: 'M3 5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4v-4H5a2 2 0 01-2-2V5z' },
+          { title: 'Road Map', color: 'yellow', route: '/modules/web-development', icon: 'M3 5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4v-4H5a2 2 0 01-2-2V5z' },
           { title: 'Process Management', color: 'purple', route: '/modules/process-management', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-          { title: 'Fundamentals of Programming', color: 'blue', route: '/modules/fundamentals', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' }
+          { title: 'Features', color: 'blue', route: '/modules/fundamentals', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' }
         ]">
           <div
             @mouseenter="onHoverCard(index)"

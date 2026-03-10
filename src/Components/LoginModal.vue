@@ -195,7 +195,15 @@
                         <input v-model="registrationForm.password" type="password" placeholder="Minimum 8 characters"
                           class="w-full bg-white border-2 border-slate-100 focus:border-blue-400 rounded-2xl px-4 sm:px-5 py-3 sm:py-4 font-bold text-slate-800 outline-none transition-all mt-2" />
                         <p class="text-[11px] text-slate-400 mt-2 ml-1">
-                          {{ loginMode === 'faculty' ? 'Faculty registration requires the code above.' : (isValidStudentId ? 'Valid ID detected. You will be registered as student.' : 'Invalid ID format. Account will be users-notverified.') }}
+                          {{ loginMode === 'faculty'
+                            ? 'Faculty registration requires the code above.'
+                            : (isCheckingStudentId
+                              ? 'Checking student ID in database...'
+                              : (studentIdExistsInDb === true
+                                ? 'Student ID found in database. Account will be assigned role_student automatically.'
+                                : (isValidStudentId
+                                  ? 'Student ID format is valid but not found in database. Account will be users-notverified.'
+                                  : 'Invalid ID format. Account will be users-notverified.'))) }}
                         </p>
                       </div>
                     </div>
@@ -249,6 +257,7 @@ import { ref, reactive, onUnmounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import { getRoleDefaultRoute } from '@/Components/roleNavigation';
+import { getStudentById } from '@/firebase/studentService';
 
 const { loginWithGoogle, login, registerWithRole, isAuthenticated, isInitialized, role, userProfile } = useAuth();
 const router = useRouter();
@@ -333,9 +342,13 @@ const generatedEmail = computed(() => {
 });
 
 const isValidStudentId = computed(() => Boolean(extractedData.value?.idNumber && ID_REGEX.test(extractedData.value.idNumber)));
+const studentIdExistsInDb = ref(null);
+const isCheckingStudentId = ref(false);
 const registrationRole = computed(() => {
   if (loginMode.value === 'faculty') return 'faculty';
-  return isValidStudentId.value ? STUDENT_ROLE : UNVERIFIED_ROLE;
+  if (!isValidStudentId.value) return UNVERIFIED_ROLE;
+  if (studentIdExistsInDb.value === true) return STUDENT_ROLE;
+  return UNVERIFIED_ROLE;
 });
 
 const setExtractedData = (data) => {
@@ -517,6 +530,22 @@ const handleFileSelect = (e) => {
   }
 };
 
+const checkStudentIdInDb = async () => {
+  studentIdExistsInDb.value = null;
+  if (!isValidStudentId.value) return false;
+  isCheckingStudentId.value = true;
+  try {
+    const result = await getStudentById(extractedData.value?.idNumber || '');
+    studentIdExistsInDb.value = Boolean(result.success);
+    return Boolean(result.success);
+  } catch {
+    studentIdExistsInDb.value = false;
+    return false;
+  } finally {
+    isCheckingStudentId.value = false;
+  }
+};
+
 const handleRegistrationComplete = async () => {
   if (!registrationForm.password) {
     alert("Please fill in all required fields.");
@@ -544,7 +573,14 @@ const handleRegistrationComplete = async () => {
 
   isLoading.value = true;
   try {
-    const roleToApply = registrationRole.value;
+    let roleToApply = UNVERIFIED_ROLE;
+    if (loginMode.value === 'faculty') {
+      roleToApply = registrationRole.value;
+    } else if (hasValidId) {
+      const exists = await checkStudentIdInDb();
+      roleToApply = exists ? STUDENT_ROLE : UNVERIFIED_ROLE;
+    }
+
     const result = await registerWithRole(
       generatedEmail.value,
       registrationForm.password,
@@ -608,6 +644,14 @@ watch(
       showSuccess.value = false;
       clearAuthNotice();
     }
+  }
+);
+
+watch(
+  () => extractedData.value?.idNumber,
+  async () => {
+    if (loginMode.value !== 'student') return;
+    await checkStudentIdInDb();
   }
 );
 

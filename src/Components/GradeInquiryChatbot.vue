@@ -225,7 +225,7 @@ The Only Limitation is our Imagination.
                       @keydown.enter.prevent="handleChatSubmit"
                     />
                   <button
-                    class="mt-3 px-5 py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm sm:text-base hover:bg-blue-700 transition shadow-sm"
+                    class="mt-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-500 to-blue-400 text-white font-bold text-sm sm:text-base hover:bg-blue-700 transition shadow-sm"
                     @click="handleChatSubmit"
                     :disabled="isProcessing || !chatInput?.trim?.()"
                   >
@@ -448,16 +448,7 @@ The Only Limitation is our Imagination.
             </div>
 
             <div v-if="canUploadGrades" class="rounded-2xl border border-slate-200/70 bg-white p-4 sm:p-6 shadow-sm">
-              <div class="flex items-center justify-between gap-3">
-                <h3 class="text-base sm:text-lg font-bold text-slate-800">Incoming Tickets</h3>
-                <button
-                  v-if="canManageTickets"
-                  class="px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition"
-                  @click="openRegistrarCreateTicket"
-                >
-                  New Ticket
-                </button>
-              </div>
+              <h3 class="text-base sm:text-lg font-bold text-slate-800">Incoming Tickets</h3>
               <p class="text-xs text-slate-500 mt-1">Student requests appear here with transaction IDs.</p>
               <div v-if="tickets.length" class="mt-4 space-y-3 text-sm">
                 <button
@@ -669,80 +660,8 @@ The Only Limitation is our Imagination.
             <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
               Current process: {{ selectedTicket.processNote }}
             </div>
-
-            <div v-if="canManageTickets" class="mt-3 rounded-xl border border-slate-200 bg-white p-3 space-y-3">
-              <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {{ isCreatingTicket ? 'Create Ticket' : 'Edit Ticket' }}
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input
-                  v-model="registrarTicketForm.service"
-                  type="text"
-                  placeholder="Service"
-                  class="px-3 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-                <input
-                  v-model="registrarTicketForm.studentId"
-                  type="text"
-                  placeholder="Student ID"
-                  class="px-3 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-                <select
-                  v-model="registrarTicketForm.status"
-                  class="px-3 py-2 rounded-xl border border-slate-200 text-sm"
-                >
-                  <option v-for="status in registrarTicketStatusOptions" :key="status" :value="status">{{ status }}</option>
-                </select>
-                <input
-                  v-model="registrarTicketForm.contact"
-                  type="text"
-                  placeholder="Contact"
-                  class="px-3 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-              <input
-                v-model="registrarTicketForm.purpose"
-                type="text"
-                placeholder="Purpose"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"
-              />
-              <textarea
-                v-model="registrarTicketForm.comment"
-                rows="2"
-                placeholder="Comment"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm resize-none"
-              ></textarea>
-              <textarea
-                v-model="registrarTicketForm.notes"
-                rows="2"
-                placeholder="Notes"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm resize-none"
-              ></textarea>
-              <textarea
-                v-model="registrarTicketForm.processNote"
-                rows="2"
-                placeholder="Process note"
-                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm resize-none"
-              ></textarea>
-            </div>
           </div>
           <div class="px-5 py-4 border-t border-slate-100 flex justify-end">
-            <button
-              v-if="canManageTickets && !isCreatingTicket"
-              class="px-4 py-2 mr-2 rounded-xl bg-rose-600 text-white hover:bg-rose-700"
-              :disabled="isProcessing"
-              @click="handleDeleteTicket"
-            >
-              Delete
-            </button>
-            <button
-              v-if="canManageTickets"
-              class="px-4 py-2 mr-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
-              :disabled="isProcessing"
-              @click="handleSaveTicket"
-            >
-              {{ isCreatingTicket ? 'Create' : 'Update' }}
-            </button>
             <button
               class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50"
               @click="closeTicketDetails"
@@ -762,13 +681,7 @@ import { useAuth } from '@/composables/useAuth'
 import { uploadGrades, getGradesByStudentId, parseGradeFile, getGradeUploads } from '@/firebase/gradeService'
 import { getStudentById } from '@/firebase/studentService'
 import { getSubjectsByProgram } from '@/firebase/subjectService'
-import {
-  createInquiryTicket,
-  subscribeRegistrarTickets,
-  subscribeStudentTickets,
-  updateInquiryTicket,
-  deleteInquiryTicket
-} from '@/firebase/ticketService'
+import { createInquiryTicket, subscribeRegistrarTickets, subscribeStudentTickets } from '@/firebase/ticketService'
 import ProspectusYearTable from '@/Components/ProspectusYearTable.vue'
 
 const { role, userProfile } = useAuth()
@@ -778,7 +691,6 @@ const isRegistrar = computed(() => resolvedRole.value === 'role_registrar')
 const isInstructor = computed(() => resolvedRole.value === 'role_instructor')
 const isStudent = computed(() => resolvedRole.value === 'role_student')
 const canUploadGrades = computed(() => isRegistrar.value || isInstructor.value)
-const canManageTickets = computed(() => isRegistrar.value)
 
 const messages = ref([])
 const sessionName = computed(() => {
@@ -881,7 +793,6 @@ const documentTicketServices = [
 ]
 const ticketTypeOptions = ['New Request', 'Follow-up', 'Correction']
 const ticketPriorityOptions = ['Low', 'Normal', 'High']
-const registrarTicketStatusOptions = ['Submitted', 'In Review', 'Processing', 'Completed', 'Rejected']
 const ticketForm = ref({
   service: '',
   requestType: 'New Request',
@@ -893,17 +804,6 @@ const ticketForm = ref({
   notes: ''
 })
 const selectedTicket = ref(null)
-const isCreatingTicket = ref(false)
-const registrarTicketForm = ref({
-  service: '',
-  studentId: '',
-  status: 'Submitted',
-  processNote: '',
-  purpose: '',
-  contact: '',
-  comment: '',
-  notes: ''
-})
 const lottieRef = ref(null)
 const isLottiePlaying = ref(true)
 const isTyping = ref(false)
@@ -1540,114 +1440,12 @@ const finalizeDocumentRequest = async () => {
   conversationStep.value = 'root'
 }
 
-const setRegistrarTicketForm = (ticket = null) => {
-  const details = ticket?.details || {}
-  registrarTicketForm.value = {
-    service: ticket?.service || '',
-    studentId: ticket?.studentId || '',
-    status: ticket?.status || 'Submitted',
-    processNote: ticket?.processNote || 'Submitted. Waiting for registrar verification.',
-    purpose: details.purpose || '',
-    contact: details.contact || '',
-    comment: details.comment || '',
-    notes: details.notes || ''
-  }
-}
-
-const openRegistrarCreateTicket = () => {
-  isCreatingTicket.value = true
-  selectedTicket.value = {
-    service: '',
-    studentId: '',
-    status: 'Submitted',
-    processNote: 'Submitted. Waiting for registrar verification.',
-    details: {}
-  }
-  setRegistrarTicketForm(selectedTicket.value)
-}
-
 const openTicketDetails = (ticket) => {
-  isCreatingTicket.value = false
   selectedTicket.value = ticket
-  setRegistrarTicketForm(ticket)
 }
 
 const closeTicketDetails = () => {
-  isCreatingTicket.value = false
   selectedTicket.value = null
-}
-
-const handleSaveTicket = async () => {
-  if (!canManageTickets.value) return
-
-  const payload = {
-    service: String(registrarTicketForm.value.service || '').trim(),
-    studentId: String(registrarTicketForm.value.studentId || '').trim(),
-    studentIdNormalized: normalizeId(registrarTicketForm.value.studentId || ''),
-    status: String(registrarTicketForm.value.status || 'Submitted'),
-    processNote: String(registrarTicketForm.value.processNote || '').trim() || 'Submitted. Waiting for registrar verification.',
-    details: {
-      purpose: String(registrarTicketForm.value.purpose || '').trim(),
-      contact: String(registrarTicketForm.value.contact || '').trim(),
-      comment: String(registrarTicketForm.value.comment || '').trim(),
-      notes: String(registrarTicketForm.value.notes || '').trim()
-    }
-  }
-
-  if (!payload.service || !payload.studentId) {
-    errorMessage.value = 'Service and student ID are required.'
-    return
-  }
-
-  isProcessing.value = true
-  errorMessage.value = ''
-  successMessage.value = ''
-  try {
-    if (isCreatingTicket.value) {
-      const created = await createInquiryTicket({
-        ...payload,
-        createdByUid: userProfile.value?.uid || '',
-        createdByEmail: userProfile.value?.email || '',
-        createdByName: userProfile.value?.displayName || userProfile.value?.fullName || ''
-      })
-      if (!created.success) {
-        errorMessage.value = created.message || 'Failed to create ticket.'
-        return
-      }
-      successMessage.value = `Ticket created. Ticket ID: ${created.ticket?.ticketId || created.id}`
-      await pushAssistantMessage(successMessage.value, 'success')
-    } else {
-      const updated = await updateInquiryTicket(selectedTicket.value?.id, payload)
-      if (!updated.success) {
-        errorMessage.value = updated.message || 'Failed to update ticket.'
-        return
-      }
-      successMessage.value = 'Ticket updated successfully.'
-      await pushAssistantMessage(successMessage.value, 'success')
-    }
-    closeTicketDetails()
-  } finally {
-    isProcessing.value = false
-  }
-}
-
-const handleDeleteTicket = async () => {
-  if (!canManageTickets.value || !selectedTicket.value?.id) return
-  isProcessing.value = true
-  errorMessage.value = ''
-  successMessage.value = ''
-  try {
-    const result = await deleteInquiryTicket(selectedTicket.value.id)
-    if (!result.success) {
-      errorMessage.value = result.message || 'Failed to delete ticket.'
-      return
-    }
-    successMessage.value = 'Ticket deleted successfully.'
-    await pushAssistantMessage(successMessage.value, 'success')
-    closeTicketDetails()
-  } finally {
-    isProcessing.value = false
-  }
 }
 
 const toggleLottiePlayback = () => {
@@ -1948,7 +1746,7 @@ const handleInquiry = async (preferredView = 'grades') => {
     if (!studentResponse.success) {
       errorMessage.value = ''
       await pushNotice(
-        'Student record not found in the Student Management dataset. Please verify your student ID.'
+        'Student record not found. Please verify your student ID. Make sure to '
       )
       return
     }
