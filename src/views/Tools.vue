@@ -1,12 +1,27 @@
 <template>
-    <div class=" rounded-lg relative mt-4 flex flex-col h-full">
+    <div class=" rounded-lg animate-fade-in  relative mt-4 flex flex-col  h-full">
         <div class="rounded-lg min-h-screen min-w-full font-sans ">
             <div class="max-w-7xl mx-auto rounded-xl bg-white m-2 justify-center p-6">
+                <section class="mb-8 rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-5 sm:p-6 shadow-sm">
+                    <div class="text-xs font-semibold uppercase tracking-widest text-slate-500">Public Feature Card</div>
+                    <h1 class="mt-2 text-2xl sm:text-3xl font-black text-slate-900">Tools Knowledge Hub</h1>
+                    <p class="mt-2 text-sm sm:text-base text-slate-600">
+                        Browse programming articles and resources. This section is publicly accessible and designed for quick learning discovery.
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-3">
+                        <a href="/features" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition">
+                            Back to Features
+                        </a>
+                        <a href="/grade-inquiry" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition">
+                            Open Assistant
+                        </a>
+                    </div>
+                </section>
 
                 <!-- 1. POST DETAIL VIEW (Conditional Rendering) -->
-                <div v-if="currentPath.startsWith('/blog/') && currentPath !== '/blog'" class="p-8 rounded-xl shadow-2xl bg-white">
+                <div v-if="currentPath.startsWith('/blog/') && currentPath !== '/blog'" class="animate-fade-in  p-8 rounded-xl shadow-2xl bg-white">
                     <button @click="goBack" class="nem timeline-box p-4 rounded-lg hover:text-blue-600 mb-6 flex items-center font-semibold text-sm transition duration-150">
-                        <svg class="nem w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        <svg class=" nem w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                         Back to All Sections
                     </button>
                     <h1 class="nem sm:text-5xl font-extrabold text-gray-900 mb-4">{{ currentPost.title }}</h1>
@@ -27,7 +42,7 @@
                         
                         <!-- Unique Content for Post ID 1 (Introduction to PHP) -->
                         <template v-if="currentPost.id === 1">
-                            <h2 class="text-blue-600 font-bold text-2xl mb-4">🚀 Introduction to PHP: Server-Side Scripting Power</h2>
+                            <h2 class="text-blue-600 font-bold text-2xl mb-4">Introduction to PHP: Server-Side Scripting Power</h2>
                             <p class="text-lg mb-4">PHP (Hypertext Preprocessor) is a powerful server-side scripting language designed for web development. It's embedded within HTML and executed on the server, making it perfect for creating dynamic web pages.</p>
                             
                             <div class="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-md my-6">
@@ -61,7 +76,7 @@ if ($age >= 18) {
                         
                         <!-- Unique Content for Post ID 2 (HTML Fundamentals) -->
                         <template v-else-if="currentPost.id === 2">
-                            <h2 class="text-green-600 font-bold text-2xl mb-4">📝 HTML Fundamentals: Building Web Page Structure</h2>
+                            <h2 class="text-green-600 font-bold text-2xl mb-4">HTML Fundamentals: Building Web Page Structure</h2>
                             <p class="text-lg mb-4">HTML (HyperText Markup Language) is the backbone of every webpage. It provides the structure and content that browsers render into what users see and interact with.</p>
                             
                             <div class="p-4 bg-green-50 border-l-4 border-green-500 rounded-md my-6">
@@ -106,90 +121,179 @@ if ($age >= 18) {
 &lt;/body&gt;
 &lt;/html&gt;</code>
                             </pre>
-                            <p>Cross Platform - Mobile Application Development</p>
+                            <p>HTML provides a semantic foundation that supports accessibility, SEO, and maintainable frontend architecture.</p>
                         </template>
-
                         <!-- Unique Content for Post ID 3 (CSS Styling) -->
-                        <template v-else-if="currentPost.id === 3"><h2 class="text-purple-600 font-bold text-2xl mb-4">📱 Mobile Application Development: Building Apps for Modern Users</h2>
-<p class="text-lg mb-4">Mobile Application Development focuses on creating interactive, user-friendly apps for smartphones and tablets. It transforms ideas into powerful applications that run smoothly on Android and iOS devices.</p>
+                        <template v-else-if="currentPost.id === 3">
+                            <h2 class="text-purple-600 font-bold text-2xl mb-4">CSS Styling Techniques: From Basics to Advanced</h2>
+                            <p class="text-lg mb-4">
+                                CSS turns plain HTML into modern interfaces. For students, strong CSS skills mean you can build projects that look professional, stay readable on mobile, and support accessible user experiences.
+                            </p>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
-    <div class="p-4 bg-purple-50 rounded-lg">
-        <h4 class="font-semibold text-purple-800 mb-2">Core Components</h4>
-        <ul class="list-disc list-inside ml-4 text-purple-700 text-sm">
-            <li>User Interface (UI) Components</li>
-            <li>Navigation & Routing</li>
-            <li>State Management</li>
-            <li>API Integration (REST/GraphQL)</li>
-            <li>Authentication & Security</li>
-        </ul>
-    </div>
-    <div class="p-4 bg-purple-50 rounded-lg">
-        <h4 class="font-semibold text-purple-800 mb-2">Development Approaches</h4>
-        <ul class="list-disc list-inside ml-4 text-purple-700 text-sm">
-            <li>Native Development (Java/Kotlin, Swift)</li>
-            <li>Cross-Platform (Flutter, React Native)</li>
-            <li>Hybrid Apps (Ionic)</li>
-            <li>Backend Integration (Firebase, Node.js)</li>
-        </ul>
-    </div>
-</div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6 items-stretch">
+                                <div class="p-4 bg-purple-50 rounded-lg h-full border border-purple-100">
+                                    <h4 class="font-semibold text-purple-800 mb-2">Core CSS Foundations</h4>
+                                    <ul class="list-disc list-inside ml-4 text-purple-700 text-sm space-y-1">
+                                        <li>Selectors, specificity, and cascade behavior</li>
+                                        <li>Box model: margin, border, padding, and sizing</li>
+                                        <li>Typography scale, color systems, and spacing</li>
+                                        <li>Responsive layouts with Flexbox and Grid</li>
+                                        <li>Media queries for device adaptation</li>
+                                    </ul>
+                                </div>
+                                <div class="p-4 bg-purple-50 rounded-lg h-full border border-purple-100">
+                                    <h4 class="font-semibold text-purple-800 mb-2">Advanced Styling Practices</h4>
+                                    <ul class="list-disc list-inside ml-4 text-purple-700 text-sm space-y-1">
+                                        <li>Reusable design tokens with CSS custom properties</li>
+                                        <li>Component states: hover, focus, active, disabled</li>
+                                        <li>Accessible contrast and keyboard-friendly focus styles</li>
+                                        <li>Lightweight transitions and purposeful animation</li>
+                                        <li>Organized architecture using utility or component-first styles</li>
+                                    </ul>
+                                </div>
+                            </div>
 
-<h3 class="font-bold text-xl mt-6 mb-3">Mobile App Example with React Native</h3>
-<pre class="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
-<code>// Simple React Native Component
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-
-export default function App() {
-  return (
-    &lt;View style={styles.container}&gt;
-      &lt;View style={styles.card}&gt;
-        &lt;Text style={styles.title}&gt;Welcome to Mobile Development&lt;/Text&gt;
-        &lt;TouchableOpacity style={styles.button}&gt;
-          &lt;Text style={styles.buttonText}&gt;Get Started&lt;/Text&gt;
-        &lt;/TouchableOpacity&gt;
-      &lt;/View&gt;
-    &lt;/View&gt;
-  );
+                            <h3 class="font-bold text-xl mt-6 mb-3">Example: Reusable Card Component Styling</h3>
+                            <pre class="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
+<code>:root {
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --card-radius: 12px;
+  --card-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  --accent: #2563eb;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#667eea',
-    padding: 20,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 20,
-    width: '100%',
-    maxWidth: 350,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  button: {
-    backgroundColor: '#764ba2',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-});</code>
-</pre>
-<p>Mobile application development enables the creation of responsive, secure, and high-performance apps that deliver seamless user experiences across devices.</p>
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-</template>
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.16);
+}
+
+.card:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}</code>
+                            </pre>
+                            <p>
+                                Mastering these techniques helps you produce cleaner UI, consistent design quality, and portfolio-ready frontend work.
+                            </p>
+                        </template>
+
+                        <!-- Unique Content for Post ID 4 (Responsive Web Design) -->
+                        <template v-else-if="currentPost.id === 4">
+                            <h2 class="text-emerald-600 font-bold text-2xl mb-4">Responsive Web Design with CSS Grid and Flexbox</h2>
+                            <p class="text-lg mb-4">
+                                Responsive design means one website adapts smoothly across phones, tablets, laptops, and large screens.
+                                For students, this is essential because your projects are usually checked on different devices and screen sizes.
+                            </p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6 items-stretch">
+                                <div class="p-4 bg-emerald-50 rounded-lg h-full border border-emerald-100">
+                                    <h4 class="font-semibold text-emerald-800 mb-2">What to Prioritize</h4>
+                                    <ul class="list-disc list-inside ml-4 text-emerald-700 text-sm space-y-1">
+                                        <li>Mobile-first layout and readable text sizes</li>
+                                        <li>Flexible containers using Grid and Flexbox</li>
+                                        <li>Consistent spacing and visual hierarchy</li>
+                                        <li>Accessible controls with proper tap targets</li>
+                                        <li>Performance: optimize images and avoid layout shifts</li>
+                                    </ul>
+                                </div>
+                                <div class="p-4 bg-emerald-50 rounded-lg h-full border border-emerald-100">
+                                    <h4 class="font-semibold text-emerald-800 mb-2">Student Workflow</h4>
+                                    <ul class="list-disc list-inside ml-4 text-emerald-700 text-sm space-y-1">
+                                        <li>Start with a simple single-column mobile layout</li>
+                                        <li>Add breakpoints only when the layout actually breaks</li>
+                                        <li>Use reusable utility classes or component styles</li>
+                                        <li>Test with browser device emulation and real phones</li>
+                                        <li>Document responsive decisions in your project notes</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <h3 class="font-bold text-xl mt-6 mb-3">Sample 1: Mobile-First Breakpoints</h3>
+                            <pre class="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
+<code>.container {
+  width: min(100% - 2rem, 1100px);
+  margin-inline: auto;
+}
+
+.content {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr; /* mobile */
+}
+
+@media (min-width: 768px) {
+  .content {
+    grid-template-columns: 1fr 1fr; /* tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .content {
+    grid-template-columns: 2fr 1fr; /* desktop */
+  }
+}</code>
+                            </pre>
+
+                            <h3 class="font-bold text-xl mt-6 mb-3">Sample 2: Responsive Card Grid with auto-fit</h3>
+                            <pre class="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
+<code>.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  background: #fff;
+}</code>
+                            </pre>
+
+                            <h3 class="font-bold text-xl mt-6 mb-3">Sample 3: Flexible Navbar with Wrap</h3>
+                            <pre class="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
+<code>.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.nav-links {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}</code>
+                            </pre>
+
+                            <h3 class="font-bold text-xl mt-6 mb-3">Sample 4: Fluid Typography</h3>
+                            <pre class="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
+<code>h1 {
+  font-size: clamp(1.5rem, 1.1rem + 2vw, 2.5rem);
+  line-height: 1.2;
+}
+
+p {
+  font-size: clamp(0.95rem, 0.9rem + 0.4vw, 1.1rem);
+}</code>
+                            </pre>
+
+                            <p>
+                                Use these patterns as a baseline for assignments and capstone projects.
+                                They improve readability, maintainability, and user experience across devices.
+                            </p>
+                        </template>
 
                         <!-- Generic Fallback Content for all other posts -->
                         <template v-else>
@@ -287,12 +391,24 @@ const styles = StyleSheet.create({
                                 <!-- Left Column: Hero Text -->
                                 <div class="lg:w-1/2 mb-10 lg:mb-0 pt-4 sm:pt-8">
                                     <h1 class="nem text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4 sm:mb-6 max-w-lg leading-snug lg:leading-tight">
-                                        Mastering HTML & CSS for Modern Web Design
+                                        Modern Web Design: Building Applications for Modern Users
                                     </h1>
-                                    
+
                                     <p class="h1 text-base text-gray-600 mb-4 max-w-md">
-                                        Learn how to create responsive, accessible, and beautiful websites using semantic HTML and modern CSS techniques including Flexbox, Grid, and CSS custom properties.
+                                        Modern users expect fast, readable, and mobile-friendly interfaces. As a student developer, focus on clear layouts, accessible components, and consistent visual hierarchy so your projects are both impressive and usable.
                                     </p>
+                                    <p class="h1 text-base text-gray-600 mb-4 max-w-md">
+                                        Build your frontend with semantic HTML, CSS Grid and Flexbox, and reusable UI patterns. Then test on phones, tablets, and laptops to ensure your app works reliably in real classroom and internship scenarios.
+                                    </p>
+                                    <div class="max-w-md rounded-xl border border-green-200 bg-green-50 p-4">
+                                        <h3 class="h1 text-sm font-semibold uppercase tracking-wide text-green-800 mb-2">Student Focus Checklist</h3>
+                                        <ul class="h1 list-disc list-inside text-sm text-green-900 space-y-1">
+                                            <li>Use responsive breakpoints and fluid spacing</li>
+                                            <li>Keep color contrast readable for accessibility</li>
+                                            <li>Prioritize loading speed and clean navigation</li>
+                                            <li>Document design decisions in your portfolio</li>
+                                        </ul>
+                                    </div>
                                 </div>
 
                                 <!-- Right Column: Blog Grid (Posts 3 and 4) -->
@@ -528,4 +644,7 @@ code {
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
 </style>
+
+

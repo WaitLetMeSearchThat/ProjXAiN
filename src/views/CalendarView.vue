@@ -1,15 +1,17 @@
 <template>
-  <div class="p-4 md:p-6  mx-4 my-4 rounded-lg bg-gray-300 ">
-    <div class="mb-6 mx-4 my-4  ">
+  <div class="view-shell">
+    <div class="view-content">
+      <div class="view-header mb-6">
       <h1 class="text-2xl md:text-3xl text-gradient-to-r from-emerald-600 via-teal-500 to-blue-200 font-bold  dark:text-white">
         Calendar of Activities
       </h1>
       <p class="text-gray-600 dark:text-gray-400 mt-1">
         View and manage school events and activities
       </p>
-    </div>
+      </div>
     
     <!-- Sample events for demonstration -->
+    <div class="view-card p-4 md:p-6">
     <Scheduler 
       :initial-date="new Date()" 
       :events="sampleEvents"
@@ -19,7 +21,8 @@
     />
  
 <AnnouncementList />
-
+    </div>
+    </div>
   </div>
 </template>
 

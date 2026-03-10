@@ -1,7 +1,18 @@
 import { ref, computed } from 'vue';
 import { auth, db } from '../firebase/config';
-import { onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
-import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signOut,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential
+} from 'firebase/auth';
+import { collection, query, where, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '../assets/constants';
 
 const user = ref(null);
@@ -12,6 +23,7 @@ const userProfile = ref(null);
 const isAuthenticated = computed(() => Boolean(user.value));
 const isInitialized = computed(() => loading.value === false);
 const SESSION_DURATION_MS = 4 * 60 * 60 * 1000;
+const STUDENT_ROLE = 'role_student';
 
 const isProfileExpired = (profile) => {
   if (!profile?.expiresAt) return true;
@@ -51,6 +63,43 @@ const loadProfileFromStorage = () => {
   }
 };
 
+const fetchRoleAssignment = async (uid, email) => {
+  const byUserId = query(
+    collection(db, COLLECTIONS.USER_ROLES),
+    where('userId', '==', uid)
+  );
+  let snapshot = await getDocs(byUserId);
+
+  if (snapshot.empty && email) {
+    const byEmail = query(
+      collection(db, COLLECTIONS.USER_ROLES),
+      where('email', '==', String(email).toLowerCase())
+    );
+    snapshot = await getDocs(byEmail);
+  }
+
+  if (snapshot.empty) return null;
+  const docSnap = snapshot.docs[0];
+  return { id: docSnap.id, ...docSnap.data() };
+};
+
+const applyRoleAssignmentToSession = (assignment) => {
+  if (!assignment) {
+    role.value = null;
+    upsertSessionProfile({
+      role: null,
+      mustChangePassword: false
+    });
+    return;
+  }
+
+  role.value = assignment.roleId || null;
+  upsertSessionProfile({
+    role: assignment.roleId || null,
+    mustChangePassword: Boolean(assignment.mustChangePassword)
+  });
+};
+
 // Initialize auth listener once
 onAuthStateChanged(auth, async (currentUser) => {
   user.value = currentUser;
@@ -73,27 +122,8 @@ onAuthStateChanged(auth, async (currentUser) => {
       });
     }
     try {
-      // Primary lookup: userId (Auth UID)
-      const byUserId = query(
-        collection(db, COLLECTIONS.USER_ROLES),
-        where('userId', '==', currentUser.uid)
-      );
-      let snapshot = await getDocs(byUserId);
-
-      // Fallback: lookup by email (matches seeded RBAC data)
-      if (snapshot.empty && currentUser.email) {
-        const byEmail = query(
-          collection(db, COLLECTIONS.USER_ROLES),
-          where('email', '==', currentUser.email)
-        );
-        snapshot = await getDocs(byEmail);
-      }
-
-      if (!snapshot.empty) {
-        role.value = snapshot.docs[0].data().roleId;
-      } else {
-        role.value = null;
-      }
+      const assignment = await fetchRoleAssignment(currentUser.uid, currentUser.email);
+      applyRoleAssignmentToSession(assignment);
     } catch (error) {
       console.error("Error fetching user role:", error);
       role.value = null;
@@ -110,38 +140,24 @@ const login = async (email, password) => {
     
     // Fetch role from Firestore after login
     try {
-      const byUserId = query(
-        collection(db, COLLECTIONS.USER_ROLES),
-        where('userId', '==', result.user.uid)
-      );
-      let snapshot = await getDocs(byUserId);
-      
-      // Fallback: lookup by email
-      if (snapshot.empty && result.user.email) {
-        const byEmail = query(
-          collection(db, COLLECTIONS.USER_ROLES),
-          where('email', '==', result.user.email)
-        );
-        snapshot = await getDocs(byEmail);
-      }
-
-      let roleId = null;
-      if (!snapshot.empty) {
-        roleId = snapshot.docs[0].data().roleId;
-        role.value = roleId;
-      }
+      const assignment = await fetchRoleAssignment(result.user.uid, result.user.email);
+      const roleId = assignment?.roleId || null;
+      role.value = roleId;
+      const mustChangePassword = Boolean(assignment?.mustChangePassword);
       
       if (!userProfile.value || isProfileExpired(userProfile.value)) {
         upsertSessionProfile({
           uid: result.user.uid,
           email: result.user.email,
           displayName: result.user.displayName || '',
-          role: roleId
+          role: roleId,
+          mustChangePassword
         });
       } else {
         // Update existing profile with role
         upsertSessionProfile({
-          role: roleId
+          role: roleId,
+          mustChangePassword
         });
       }
     } catch (roleError) {
@@ -183,6 +199,7 @@ const registerWithRole = async (email, password, displayName, roleId, studentId 
       displayName,
       role: roleId,
       studentId,
+      mustChangePassword: false,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + SESSION_DURATION_MS).toISOString()
     };
@@ -193,9 +210,11 @@ const registerWithRole = async (email, password, displayName, roleId, studentId 
       userId: result.user.uid,
       email: result.user.email,
       roleId,
+      studentId: studentId || null,
       assignedBy: 'system',
       assignedAt: new Date(),
       isActive: true,
+      mustChangePassword: false,
       createdAt: new Date(),
       updatedAt: new Date()
     });
@@ -203,6 +222,56 @@ const registerWithRole = async (email, password, displayName, roleId, studentId 
     return { success: true, user: result.user };
   } catch (error) {
     return { success: false, error: error.message };
+  }
+};
+
+const completeInitialPasswordSetup = async (currentPassword, newPassword) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (!currentUser?.email) {
+      return { success: false, error: 'No authenticated user found.' };
+    }
+    if (!newPassword || newPassword.length < 8) {
+      return { success: false, error: 'New password must be at least 8 characters.' };
+    }
+
+    const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+    await reauthenticateWithCredential(currentUser, credential);
+    await updatePassword(currentUser, newPassword);
+
+    const byUserId = query(
+      collection(db, COLLECTIONS.USER_ROLES),
+      where('userId', '==', currentUser.uid)
+    );
+    let snapshot = await getDocs(byUserId);
+
+    if (snapshot.empty) {
+      const byEmail = query(
+        collection(db, COLLECTIONS.USER_ROLES),
+        where('email', '==', String(currentUser.email).toLowerCase())
+      );
+      snapshot = await getDocs(byEmail);
+    }
+
+    const updates = [];
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data() || {};
+      if (data.roleId === STUDENT_ROLE) {
+        updates.push(
+          updateDoc(docSnap.ref, {
+            mustChangePassword: false,
+            passwordChangedAt: new Date(),
+            updatedAt: new Date()
+          })
+        );
+      }
+    });
+    await Promise.all(updates);
+
+    upsertSessionProfile({ mustChangePassword: false });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message || 'Failed to update password.' };
   }
 };
 
@@ -229,6 +298,7 @@ export function useAuth() {
     login,
     loginWithGoogle,
     registerWithRole,
+    completeInitialPasswordSetup,
     logout
   };
 }

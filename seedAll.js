@@ -9,6 +9,7 @@ import { seedDepartments } from './seedDepartments.js';
 import { seedPrograms } from './seedPrograms.js';
 import { seedAnnouncements } from './seedAnnouncements.js';
 import { seedGradeInquiryTickets } from './seedGradeInquiryTickets.js';
+import { seedInstructorDocuments } from './seedInstructorDocuments.js';
 import { seedGradesFromFiles } from './seedGradesFromFiles.js';
 import { seedGradesFromSheets } from './seedGradesFromSheets.js';
 import { seedDm103FromCsv } from './seedDM103FromCsv.js';
@@ -74,6 +75,9 @@ async function seedAllData() {
 
     await seedInstructors();
     console.log('Instructors seeded successfully');
+
+    await seedInstructorDocuments();
+    console.log('Instructor document links seeded successfully');
 
     await seedAcademicCalendar();
     console.log('Academic calendar seeded successfully');

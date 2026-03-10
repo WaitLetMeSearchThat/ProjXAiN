@@ -28,6 +28,36 @@ const toNumber = (value) => {
 
 const normalizeStudentId = (value) => String(value || '').replace(/\s+/g, '').toUpperCase();
 
+const getEmailFromRow = (row) => {
+  const directKeys = [
+    'EMAIL',
+    'Email',
+    'email',
+    'E-MAIL',
+    'E_MAIL',
+    'EMAIL_ADDRESS',
+    'Email Address',
+    'EMAIL ADDRESS',
+    'STUDENT_EMAIL',
+    'Student Email'
+  ];
+
+  for (const key of directKeys) {
+    const value = String(row?.[key] || '').trim();
+    if (value) return value;
+  }
+
+  // XLSX uses "__EMPTY", "__EMPTY_1", ... for blank headers.
+  // Column T is index 20, which maps to "__EMPTY_19" when the header cell is blank.
+  const emptyHeaderKeys = ['__EMPTY_19', '__EMPTY_20', '__EMPTY_18'];
+  for (const key of emptyHeaderKeys) {
+    const value = String(row?.[key] || '').trim();
+    if (value) return value;
+  }
+
+  return '';
+};
+
 const parseStudentName = (fullName) => {
   const text = String(fullName || '').trim().replace(/\s+/g, ' ');
   if (!text) {
@@ -119,6 +149,7 @@ const mapRowToStudent = (row) => {
 
   const parsedName = parseStudentName(row.STUDENT_NAME);
   const studentIdForEmail = normalizeStudentId(studentId).toLowerCase().replace(/[^a-z0-9]/g, '');
+  const seededEmail = getEmailFromRow(row);
 
   return {
     studentId,
@@ -127,7 +158,7 @@ const mapRowToStudent = (row) => {
     middleName: parsedName.middleName,
     lastName: parsedName.lastName,
     extensionName: '',
-    email: `${studentIdForEmail}@bcc.edu.ph`,
+    email: seededEmail || `${studentIdForEmail}@bcc.edu.ph`,
     program: PROGRAM_CODES.BSIS,
     yearLevel: YEAR_LEVELS.THIRD_YEAR,
     section,

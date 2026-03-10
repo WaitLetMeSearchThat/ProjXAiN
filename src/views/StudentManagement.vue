@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      <div class="mb-8">
+  <div class="view-shell">
+    <div class="view-content">
+      <div class="view-header mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Student Management System</h1>
         <p class="mt-2 text-gray-600">Manage students, grades, and subjects for your academic institution</p>
       </div>
@@ -39,7 +39,7 @@
           </div>
         </div>
       <!-- Tab Content -->
-      <div class="bg-white shadow rounded-lg">
+      <div class="view-card p-2 sm:p-3">
         <StudentList v-if="activeTab === 'students'" />
         <GradeList v-if="activeTab === 'grades'" />
         <SubjectList v-if="activeTab === 'subjects'" />

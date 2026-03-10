@@ -140,13 +140,20 @@ export const COLLECTIONS = {
     GRADES: 'grades',
     SUBJECTS: 'subjects',
     INSTRUCTORS: 'instructors',
+    INSTRUCTOR_DOCUMENTS: 'instructorDocuments',
+    STUDENT_VALIDATION_LINKS: 'studentValidationLinks',
     PROSPECTUS: 'prospectus',
     PROGRAMS: 'programs',
     ACADEMIC_YEARS: 'academicYears', // Used for calendar events
     DEPARTMENTS: 'departments',
     ROLES: 'roles',
     USER_ROLES: 'userRoles',
-    ANNOUNCEMENTS: 'announcements'
+    ANNOUNCEMENTS: 'announcements',
+    CLASSROOM_OFFERINGS: 'classroomOfferings',
+    CLASSROOM_ENROLLMENTS: 'classroomEnrollments',
+    CLASSROOM_POSTS: 'classroomPosts',
+    CLASSROOM_ACTIVITIES: 'classroomActivities',
+    CLASSROOM_MODULES: 'classroomModules'
 };
 
 export const SUBCOLLECTIONS = {
@@ -268,3 +275,4 @@ export const subjectTemplate = {
     [SUBJECT_FIELDS.SEMESTER_OFFERED]: [],
     [SUBJECT_FIELDS.IS_ACTIVE]: true
 };
+

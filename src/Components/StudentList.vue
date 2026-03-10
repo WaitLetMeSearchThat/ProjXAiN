@@ -3,14 +3,8 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
       <div>
         <h2 class="text-2xl font-black text-slate-900">Student Management</h2>
-        <p class="text-sm text-slate-500">Search, filter, and maintain student records.</p>
+        <p class="text-sm text-slate-500">Search and filter registrar spreadsheet records.</p>
       </div>
-      <button
-        @click="showForm = true; editingStudent = null"
-        class="px-4 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900"
-      >
-        Add Student
-      </button>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
@@ -78,15 +72,14 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-100">
           <tr v-if="isLoading">
-            <td colspan="9" class="px-6 py-8 text-center text-sm text-slate-500">Loading students...</td>
+            <td colspan="8" class="px-6 py-8 text-center text-sm text-slate-500">Loading students...</td>
           </tr>
           <tr v-else-if="!paginatedStudents.length">
-            <td colspan="9" class="px-6 py-8 text-center text-sm text-slate-500">No students match your filters.</td>
+            <td colspan="8" class="px-6 py-8 text-center text-sm text-slate-500">No students match your filters.</td>
           </tr>
           <tr
             v-else
@@ -124,20 +117,6 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               {{ student.isEnrolled ? 'Yes' : 'No' }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <button
-                @click="editStudent(student)"
-                class="text-indigo-600 hover:text-indigo-900 mr-3"
-              >
-                Edit
-              </button>
-              <button
-                @click="deleteStudent(student)"
-                class="text-red-600 hover:text-red-900"
-              >
-                Delete
-              </button>
-            </td>
           </tr>
         </tbody>
       </table>
@@ -166,34 +145,20 @@
       </div>
     </div>
 
-    <!-- Student Form Modal -->
-    <div v-if="showForm" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click.self="showForm = false">
-      <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
-        <StudentForm
-          :student="editingStudent"
-          :is-editing="!!editingStudent"
-          @submit="handleStudentSubmit"
-          @cancel="showForm = false"
-        />
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import StudentForm from './StudentForm.vue'
 import {
   STUDENT_STATUS,
   PROGRAM_CODES,
   YEAR_LEVELS,
   QUERY_LIMITS
 } from '@/assets/constants'
-import { listStudents, createStudent, updateStudent, deleteStudentById } from '@/firebase/studentService'
+import { listStudents } from '@/firebase/studentService'
 
 const students = ref([])
-const showForm = ref(false)
-const editingStudent = ref(null)
 const searchQuery = ref('')
 const filterProgram = ref('')
 const filterYearLevel = ref('')
@@ -254,46 +219,6 @@ const loadStudents = async () => {
     console.error('Error loading students:', error)
   } finally {
     isLoading.value = false
-  }
-}
-
-const handleStudentSubmit = async (studentData) => {
-  try {
-    if (editingStudent.value) {
-      // Update existing student
-      const result = await updateStudent(editingStudent.value.id, studentData)
-      if (!result.success) throw new Error(result.message)
-    } else {
-      // Add new student
-      const result = await createStudent(studentData)
-      if (!result.success) throw new Error(result.message)
-    }
-
-    showForm.value = false
-    editingStudent.value = null
-    await loadStudents()
-  } catch (error) {
-    console.error('Error saving student:', error)
-    alert('Error saving student. Please try again.')
-  }
-}
-
-const editStudent = (student) => {
-  editingStudent.value = { ...student }
-  showForm.value = true
-}
-
-const deleteStudent = async (student) => {
-  if (confirm(`Are you sure you want to delete student ${student.fullName}?`)) {
-    try {
-      const result = await deleteStudentById(student.id)
-      if (!result.success) throw new Error(result.message)
-
-      await loadStudents()
-    } catch (error) {
-      console.error('Error deleting student:', error)
-      alert('Error deleting student. Please try again.')
-    }
   }
 }
 

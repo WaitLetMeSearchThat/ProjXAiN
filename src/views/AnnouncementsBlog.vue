@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen">
-    <section class="px-4 sm:px-6 lg:px-8 py-10">
-      <div class="grid grid-cols-1 lg:grid-cols-[1.2fr_2fr] gap-8 items-start max-w-7xl mx-auto">
+  <div class="view-shell">
+    <section class="view-content py-10">
+      <div class="grid grid-cols-1 lg:grid-cols-[1.2fr_2fr] gap-8 items-start">
         <div class="space-y-6">
           <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
             <p class="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">

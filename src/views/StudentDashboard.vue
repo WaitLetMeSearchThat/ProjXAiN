@@ -1,11 +1,14 @@
 <template>
-  <div class="p-6 m-4 bg-white rounded-lg shadow-2xl">
-    <div class="mb-6 px-2 ">
-    
-    <RoleFeatures />  </div>
-    <ProgramProspectusOverview />
+  <div class="view-shell">
+    <div class="view-content space-y-6">
+      <div class="view-card p-6">
+        <RoleFeatures />
+      </div>
+      <div class="view-card p-6">
+        <ProgramProspectusOverview />
+      </div>
+    </div>
   </div>
-
 </template>
 
 <script setup>

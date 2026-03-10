@@ -1,8 +1,13 @@
 <template>
-  <div class="flex min-h-screen bg-gray-100 relative">
+  <div class="view-shell relative">
     <Sidebar v-if="!hideSidebar" />
 
-    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+    <main
+      :class="[
+        'view-shell min-h-screen',
+        hideSidebar ? '' : 'lg:ml-72'
+      ]"
+    >
       <router-view />
     </main>
   </div>

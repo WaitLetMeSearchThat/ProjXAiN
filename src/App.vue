@@ -2,11 +2,13 @@
 import { computed, ref, watch } from 'vue';
 import Footer from '@/Components/Footer.vue';
 import Header from '@/Components/Header.vue';
+import MobileFooter from '@/Components/MobileFooter.vue';
 import { useAuth } from '@/composables/useAuth';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const { isAuthenticated, userProfile, user, role } = useAuth();
 const router = useRouter();
+const route = useRoute();
 const showAuthNotice = ref(false);
 
 const sessionName = computed(() => {
@@ -48,18 +50,24 @@ watch(
 </script>
 
 <template>
+
   <!-- Main wrapper -->
   <div class="min-h-screen flex flex-col">
     <Header v-if="!isAuthenticated" />
+   
+
     <!-- Main Content Area -->
-    <main class="flex-grow">
+    <main class="flex-grow mt-8 theme-page-shell">
       <router-view v-slot="{ Component }">
-        <component :is="Component" />
+        <Transition name="route-fade" mode="out-in">
+          <component :is="Component" :key="route.fullPath" class="animate-fade-in" />
+        </Transition>
       </router-view>
     </main>
 
     <!-- Footer -->
     <Footer />
+    <MobileFooter />
   </div>
 </template>
 
@@ -75,4 +83,17 @@ html, body, #app {
 #app {
   font-family: 'Inter', sans-serif;
 }
+
+.route-fade-enter-active,
+.route-fade-leave-active {
+  transition: opacity 0.22s ease;
+}
+
+.route-fade-enter-from,
+.route-fade-leave-to {
+  opacity: 0;
+}
 </style>
+
+
+

@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "Vue.volar",
-    "alesdi.firestore-explorer"
+    "alesdi.firestore-explorer",
+    "phu1237.vs-browser"
   ]
 }

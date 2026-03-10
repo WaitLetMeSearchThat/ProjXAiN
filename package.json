@@ -7,13 +7,16 @@
     "build": "vite build",
     "preview": "vite preview",
     "seed:all": "node seedAll.js --run",
+    "seed:instructor-docs": "node seedInstructorDocuments.js --run",
     "seed:dm103": "node seedDM103FromCsv.js --run ./data/dm103-final.csv",
     "seed:tickets": "node seedGradeInquiryTickets.js --run",
-    "seed:bsis-hierarchy": "node seedBSISGradeHierarchy.js --run"
+    "seed:bsis-hierarchy": "node seedBSISGradeHierarchy.js --run",
+    "seed:student-auth": "node seedStudentAuth.js --run"
   },
   "dependencies": {
     "@lottiefiles/dotlottie-vue": "^0.10.15",
     "firebase": "^9.23.0",
+    "npm": "^11.10.1",
     "tesseract.js": "^7.0.0",
     "vercel": "^50.17.1",
     "vue": "^3.5.28",

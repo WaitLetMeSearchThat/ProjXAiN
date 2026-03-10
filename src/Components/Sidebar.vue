@@ -1,10 +1,10 @@
 <template>
-  <div>
+  <div class="bg-red-500">
     <!-- Mobile Drawer Button -->
     <button
       v-if="isAuthenticated"
       @click="isDrawerOpen = true"
-      class="fixed top-4 left-4 z-[200] lg:hidden 
+      class="fixed  top-4 left-4 z-[200] lg:hidden 
              bg-gray-950 backdrop-blur-xl 
              border 
              p-2 rounded-xl shadow-2xl rounded-lg"
@@ -13,12 +13,12 @@
     </button>
 
     <!-- Sidebar -->
-    <transition name="slide">
+    <transition name="slide">   
       <aside
         v-if="isAuthenticated"
         :class="[
-          'fixed lg:sticky top-0 left-0 z-[150]',
-          'flex flex-col w-72 min-h-screen',
+          'fixed   inset-y-0 left-0 z-[150]',
+          'flex flex-col w-72 h-screen',
           'bg-gray-950 text-white backdrop-blur-2xl border-r border-white/20 shadow-2xl',
           isDrawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         ]"
@@ -49,30 +49,51 @@
               <div class="text-white/60 text-sm">
                 {{ roleLabel }}
               </div>
+              <div
+                v-if="showNotVerifiedIndicator"
+                class="mt-1 inline-flex items-center rounded-full border border-amber-300/40 bg-amber-500/20 px-2 py-0.5 text-[11px] font-semibold text-amber-200"
+              >
+                Not-Verified
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Navigation -->
         <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          <RouterLink
+          <div
             v-for="item in visibleNavItems"
             :key="item.label"
-            :to="item.to"
-            class="group flex items-center mx-4 gap-3 px-4 py-3 rounded-lg 
-                   text-white hover:text-white 
-                   hover:bg-white/10 transition-all duration-300"
+            class="mx-4"
           >
-            <span
-              class="w-10 h-10 rounded-xl  flex items-center justify-center 
-                     bg-white/10   group-hover:bg-white/20 transition"
+            <RouterLink
+              :to="item.to"
+              class="group flex items-center gap-3 px-4 py-3 rounded-lg 
+                     text-white hover:text-white 
+                     hover:bg-white/10 transition-all duration-300"
             >
-              <component :is="item.icon" class="w-5 h-5 text-teal-300" />
-            </span>
-            <span class="font-medium">
-              {{ item.label }}
-            </span>
-          </RouterLink>
+              <span
+                class="w-10 h-10 rounded-xl  flex items-center justify-center 
+                       bg-white/10   group-hover:bg-white/20 transition"
+              >
+                <component :is="item.icon" class="w-5 h-5 text-teal-300" />
+              </span>
+              <span class="font-medium">
+                {{ item.label }}
+              </span>
+            </RouterLink>
+
+            <div v-if="item.children?.length" class="ml-14 mt-1 space-y-1">
+              <RouterLink
+                v-for="subItem in item.children"
+                :key="subItem.label"
+                :to="subItem.to"
+                class="block rounded-md px-3 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white transition"
+              >
+                {{ subItem.label }}
+              </RouterLink>
+            </div>
+          </div>
         </nav>
 
        
@@ -271,7 +292,6 @@ import { computed, h, ref, reactive, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { getRoleNavigation } from '@/Components/roleNavigation'
-import { updateStudentByStudentId } from '@/firebase/studentService'
 import GradeInquiryChatbot from '@/Components/GradeInquiryChatbot.vue'
 
 const { user, role, userProfile, logout } = useAuth()
@@ -294,6 +314,14 @@ const initials = computed(() => {
 const roleLabel = computed(() => {
   const label = role.value || userProfile.value?.role
   return label ? label.replace('role_', '').toUpperCase() : 'GUEST'
+})
+
+const showNotVerifiedIndicator = computed(() => {
+  const roleId = resolvedRole.value
+  const status = String(userProfile.value?.verificationStatus || userProfile.value?.status || '').toLowerCase()
+  if (roleId === 'role_student') return true
+  if (roleId === 'users-notverified') return true
+  return status === 'not-verified' || status === 'unverified'
 })
 
 const handleLogout = async () => {
@@ -356,12 +384,10 @@ const saveProfile = async () => {
     section: profileForm.section
   }
 
-  const result = await updateStudentByStudentId(studentId, update)
-
-  if (result.success) {
-    const merged = { ...(userProfile.value || {}), ...update }
-    localStorage.setItem('userProfile', JSON.stringify(merged))
-  }
+  // Student master data now comes from registrar spreadsheets, so profile edits
+  // are kept in local session only and do not write to student records.
+  const merged = { ...(userProfile.value || {}), ...update }
+  localStorage.setItem('userProfile', JSON.stringify(merged))
 
   isSavingProfile.value = false
   showProfile.value = false

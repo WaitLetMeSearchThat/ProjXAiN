@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
-import ThemeSelector from '@/Components/ThemeSelector.vue'
 import { useAuth } from '@/composables/useAuth'
 
 const LoginModal = defineAsyncComponent(() =>
@@ -9,9 +8,8 @@ const LoginModal = defineAsyncComponent(() =>
 )
 
 const navLinks = ref([
-  { name: 'Home', to: '/' },
-  { name: 'Builder', to: '/builder' },
-  { name: 'Tools', to: '/tools' },
+  { name: 'Home', to: { name: 'home' } },
+  { name: 'Features', to: { name: 'features' } },
 ])
 
 const isMenuOpen = ref(false)
@@ -69,6 +67,7 @@ function handleLoginSuccess() {
 
 async function handleLogout() {
   await logout()
+  closeMenu()
   router.push('/')
 }
 
@@ -106,7 +105,7 @@ onUnmounted(() => {
           to="/"
           class="text-2xl glass-effect  mt-6 hover:bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-2 rounded-lg font-bold text-emerald-600 hover:text-white transition"
         >
-          Project X
+          Proj X
         </RouterLink>
 
         <!-- DESKTOP NAV -->
@@ -116,20 +115,21 @@ onUnmounted(() => {
             :key="link.name"
             :to="link.to"
             class="relative px-4 py-2  backdrop-blur-2xl bg-gray-100 hover:scale-110  rounded-md px-3 mt-6 text-sm font-bold transition"
-            :class="
-              route.path === link.to
-                ? 'text-emerald-500'
-                : 'text-emerald-950 hover:text-indigo-700'
-            "
+              :class="
+                route.name === link.to.name
+                  ? 'text-emerald-500'
+                  : 'text-emerald-950 hover:text-indigo-700'
+              "
           >
             {{ link.name }}
 
             <!-- Active underline -->
             <span
-              v-if="route.path === link.to"
+              v-if="route.name === link.to.name"
               class="absolute left-0 -bottom-1 w-full h-0.5 bg-indigo-600 rounded-full"
             />
           </RouterLink>
+           
         </nav>
 
         <!-- RIGHT SECTION -->
@@ -168,14 +168,13 @@ onUnmounted(() => {
           <template v-else>
             <button
               @click="openLogin"
-              class="px-4 py-2  text-sm  font-semibold text-white rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 hover:scale-105 transition"
+              class="hidden md:block px-4 py-2 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 hover:scale-105 transition"
             >
               Login
             </button>
           </template>
-<div class="hover:scale-110 bg-gray-100/30 rounded-lg">
-          <ThemeSelector />
-</div>
+       
+
           <!-- MOBILE MENU BUTTON -->
           <button
             @click="toggleMenu"
@@ -203,7 +202,6 @@ onUnmounted(() => {
                 d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-
         </div>
       </div>
     </div>
@@ -211,7 +209,7 @@ onUnmounted(() => {
     <!-- MOBILE MENU -->
     <div
       v-if="isMenuOpen"
-      class="md:hidden bg-white border-t border-gray-200"
+      class="md:hidden mx-4 mb-6 px-4 rounded-xl bg-white border-t border-gray-200"
     >
       <div class="px-4 py-3 space-y-2">
 
@@ -237,7 +235,7 @@ onUnmounted(() => {
         <template v-else>
           <button
             @click="openLogin"
-            class="w-full px-3 py-2 rounded-md text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700"
+            class="w-full px-3 py-2 rounded-2xl text-base font-semibold text-white bg-emerald-400 hover:bg-emerald-700"
           >
             Login
           </button>

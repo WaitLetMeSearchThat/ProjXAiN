@@ -1,6 +1,8 @@
 <template>
-  <div class="p-10 flex flex-col items-center justify-center min-h-screen">
-    <h2 class="text-2xl font-bold mb-4">Login Page</h2>
-    <p class="text-gray-600">Please sign in via Firebase Auth.</p>
+  <div class="view-shell flex items-center justify-center p-4">
+    <div class="view-card w-full max-w-md p-8 text-center">
+      <h2 class="text-2xl font-bold mb-4 text-slate-900">Login Page</h2>
+      <p class="text-slate-500">Please sign in via Firebase Auth.</p>
+    </div>
   </div>
 </template>

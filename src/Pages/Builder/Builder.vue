@@ -1,22 +1,29 @@
 <template>
   <Header />
-  <div class="min-h-screen max-w-7xl mx-auto rounded-xl bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+  <div class="min-h-screen max-w-7xl mx-auto rounded-xl theme-page-shell">
     <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       
       <!-- Hero Section -->
-      <div class="text-center rounded-lg mb-8 sm:mb-12 animate-fade-in">
-        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+     
+
+      <section class="animate-fade-in rounded-2xl mb-2 primary border border-white/15 bg-gradient-to-r from-emerald-700 to-emerald-200 backdrop-blur p-5 sm:p-6">
+        <div class="text-xs font-semibold uppercase tracking-widest text-white">Public Feature Card</div>
+    <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-teal-300 via-gray-100 to-teal-400 bg-clip-text text-transparent mb-4">
           WEB PAGE BUILDER
         </h1>
-        <p class="text-base sm:text-lg text-white max-w-2xl mx-auto px-4">
-          Select a style for each component below to see the preview build update.
-        </p>
-      </div>
+        
+        <div class="mt-4 flex flex-wrap gap-3">
+          <a href="/features" class="px-4 py-2 rounded-xl bg-emerald-300  text-sm font-semibold hover:bg-blue-700 transition">
+            Back to Features
+          </a>
+     
+        </div>
+      </section>
 
       <!-- Component Selection Panel -->
-      <div class="mb-8  backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+      <div class="mb-8  backdrop-blur-xl bg-white/5 rounded-lg border border-white/10 shadow-2xl overflow-hidden">
         <!-- Main Tabs -->
-        <div class="flex border-b justify-center border-white/10 bg-black/20 p-1.5">
+        <div class="flex border-b space-x-4  justify-center border-white/10 bg-black/20 p-1.5">
           <button
             v-for="(componentData, type) in components"
             :key="type"
@@ -24,7 +31,7 @@
             class="relative px-5 py-2.5 text-sm font-medium rounded-xl transition-all duration-300"
             :class="{
               'text-white bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg': activeMainTab === type,
-              'text-gray-400 hover:text-white hover:bg-white/5': activeMainTab !== type
+              'text-gray-900 bg-white  hover:text-white hover:bg-white/5': activeMainTab !== type
             }"
           >
             {{ componentData.title }}
@@ -34,7 +41,7 @@
         <!-- Sub Tabs (Theme Categories) -->
         <div v-if="activeMainTab" class="border-b border-white/10 bg-black/40 px-4 py-2">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="text-xs font-medium text-gray-500 mr-2">Filter by theme:</span>
+            <span class="text-xs font-medium text-gray-100 mr-2">Filter by theme:</span>
             <button
               v-for="theme in Object.keys(themeCategories[activeMainTab])"
               :key="theme"
@@ -184,35 +191,14 @@
                 Export Component
               </h2>
               <p class="text-xs text-gray-400 mt-0.5">
-                Choose your preferred styling format
+                Export as HTML + CSS with separate styles
               </p>
             </div>
             
             <!-- Tech Stack Selector -->
             <div class="flex items-center gap-3">
-              <div class="flex rounded-lg bg-gray-800/50 p-0.5 border border-gray-700/50">
-                <button
-                  @click="codeFormat = 'tailwind'"
-                  class="px-4 py-1.5 text-xs font-medium rounded-md transition-all duration-200"
-                  :class="[
-                    codeFormat === 'tailwind' 
-                      ? 'bg-blue-500 text-white shadow' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-                  ]"
-                >
-                  Tailwind
-                </button>
-                <button
-                  @click="codeFormat = 'pure-css'"
-                  class="px-4 py-1.5 text-xs font-medium rounded-md transition-all duration-200"
-                  :class="[
-                    codeFormat === 'pure-css' 
-                      ? 'bg-blue-500 text-white shadow' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-                  ]"
-                >
-                  Pure CSS
-                </button>
+              <div class="rounded-lg bg-blue-500/15 px-3 py-1.5 border border-blue-500/30 text-xs font-medium text-blue-300">
+                HTML + CSS
               </div>
 
               <button 
@@ -240,7 +226,7 @@
                 <div class="w-2 h-2 rounded-full bg-gray-600" />
                 <div class="w-2 h-2 rounded-full bg-gray-600" />
               </div>
-              <span class="text-xs font-mono text-gray-500">code.html</span>
+              <span class="text-xs font-mono text-gray-500">index.html + styles.css</span>
             </div>
             
             <!-- Code Content -->
@@ -299,9 +285,9 @@
 </template>
 
 <script setup>
-import { reactive, computed, ref, onMounted } from 'vue';
-import Header from '../../components/Header.vue';
-import LivePreview from '../../components/LivePreview.vue';
+import { reactive, computed, ref, onMounted, watch, nextTick } from 'vue';
+import Header from '../../Components/Header.vue';
+import LivePreview from '../../Components/LivePreview.vue';
 
 // --- Import Components ---
 // Headers (10 examples)
@@ -430,7 +416,6 @@ const activeSubTab = ref({
   footer: 'all'
 });
 
-const codeFormat = ref('tailwind');
 const copyButtonText = ref('Copy Code');
 
 const modal = reactive({
@@ -499,6 +484,32 @@ const filteredComponents = (type) => {
 };
 
 const sourceComponents = new Map();
+const sourceStyles = new Map();
+const renderedSource = reactive({
+  header: '',
+  body: '',
+  footer: ''
+});
+
+const cleanupRenderedHtml = (html) => {
+  if (!html) return '';
+  return html
+    .replace(/\sdata-v-[a-z0-9-]+=""/g, '')
+    .replace(/\sdata-v-[a-z0-9-]+(=("[^"]*"|'[^']*'))?/g, '')
+    .replace(/\sclass=""/g, '')
+    .trim();
+};
+
+const refreshRenderedSource = async () => {
+  await nextTick();
+  const headerSlot = document.getElementById('header-slot');
+  const bodySlot = document.getElementById('body-slot');
+  const footerSlot = document.getElementById('footer-slot');
+
+  renderedSource.header = cleanupRenderedHtml(headerSlot?.innerHTML || '');
+  renderedSource.body = cleanupRenderedHtml(bodySlot?.innerHTML || '');
+  renderedSource.footer = cleanupRenderedHtml(footerSlot?.innerHTML || '');
+};
 
 // --- Modal Methods ---
 const openModal = (type, componentName, title) => {
@@ -530,32 +541,60 @@ const currentFooterComponentName = computed(() => {
 });
 
 const getSourceHtml = (type, id) => {
-  const key = `${type}-${id}-${codeFormat.value}`;
+  const key = `${type}-${id}-pure-css`;
   return sourceComponents.get(key) || ``;
+};
+
+const getSourceCss = (type, id) => {
+  const key = `${type}-${id}-pure-css`;
+  return sourceStyles.get(key) || ``;
 };
 
 const currentHeaderHtml = computed(() => {
   const headerPart = components.header.parts.find(p => String(p.id) === selectedParts.header);
-  return headerPart ? getSourceHtml('header', headerPart.id) : '';
+  if (!headerPart) return '';
+  return getSourceHtml('header', headerPart.id) || renderedSource.header;
 });
 
 const currentBodyHtml = computed(() => {
   const bodyPart = components.body.parts.find(p => String(p.id) === selectedParts.body);
-  return bodyPart ? getSourceHtml('body', bodyPart.id) : '';
+  if (!bodyPart) return '';
+  return getSourceHtml('body', bodyPart.id) || renderedSource.body;
 });
 
 const currentFooterHtml = computed(() => {
   const footerPart = components.footer.parts.find(p => String(p.id) === selectedParts.footer);
-  return footerPart ? getSourceHtml('footer', footerPart.id) : '';
+  if (!footerPart) return '';
+  return getSourceHtml('footer', footerPart.id) || renderedSource.footer;
+});
+
+const currentHeaderCss = computed(() => {
+  const headerPart = components.header.parts.find(p => String(p.id) === selectedParts.header);
+  if (!headerPart) return '';
+  return getSourceCss('header', headerPart.id);
+});
+
+const currentBodyCss = computed(() => {
+  const bodyPart = components.body.parts.find(p => String(p.id) === selectedParts.body);
+  if (!bodyPart) return '';
+  return getSourceCss('body', bodyPart.id);
+});
+
+const currentFooterCss = computed(() => {
+  const footerPart = components.footer.parts.find(p => String(p.id) === selectedParts.footer);
+  if (!footerPart) return '';
+  return getSourceCss('footer', footerPart.id);
 });
 
 const fullCodeOutput = computed(() => {
   const headerHtml = currentHeaderHtml.value.trim();
   const bodyHtml = currentBodyHtml.value.trim();
   const footerHtml = currentFooterHtml.value.trim();
+  const headerCss = currentHeaderCss.value.trim();
+  const bodyCss = currentBodyCss.value.trim();
+  const footerCss = currentFooterCss.value.trim();
 
-  if (codeFormat.value === 'pure-css') {
-    const output = `
+  const output = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -595,6 +634,10 @@ const fullCodeOutput = computed(() => {
             flex: 1;
             background: linear-gradient(135deg, #1e40af 0%, #1e293b 100%);
         }
+
+${headerCss}
+${bodyCss}
+${footerCss}
     </style>
 </head>
 <body>
@@ -618,25 +661,6 @@ const fullCodeOutput = computed(() => {
     </div>
 </body>
 </html>
-    `.trim();
-    return output;
-  }
-
-  // Tailwind output
-  const output = `
-<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4">
-    <div class="max-w-6xl mx-auto">
-        <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
-            ${headerHtml}
-            
-            <main class="flex-grow bg-gradient-to-br from-blue-900/20 to-gray-900/20">
-                ${bodyHtml}
-            </main>
-            
-            ${footerHtml}
-        </div>
-    </div>
-</div>
   `.trim();
   
   return output;
@@ -660,197 +684,111 @@ const copyCode = async () => {
 
 // --- Enhanced Source Components with Pure HTML/CSS ---
 const populateSourceComponents = () => {
-  // Header Examples (Pure CSS)
   sourceComponents.set('header-1-pure-css', `
-<nav class="header-nav" style="background: #1a202c; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2d3748;">
-    <div class="logo" style="font-size: 1.5rem; font-weight: bold; color: #4299e1;">
-        BrandLogo
+<nav class="header-nav">
+    <div class="logo">BrandLogo</div>
+    <div class="nav-links">
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">Services</a>
+        <a href="#">Contact</a>
     </div>
-    <div class="nav-links" style="display: flex; gap: 2rem;">
-        <a href="#" style="color: #cbd5e0; text-decoration: none; font-weight: 500;">Home</a>
-        <a href="#" style="color: #cbd5e0; text-decoration: none; font-weight: 500;">About</a>
-        <a href="#" style="color: #cbd5e0; text-decoration: none; font-weight: 500;">Services</a>
-        <a href="#" style="color: #cbd5e0; text-decoration: none; font-weight: 500;">Contact</a>
-    </div>
-    <button class="cta-btn" style="background: #4299e1; color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 0.375rem; font-weight: 600; cursor: pointer;">
-        Get Started
-    </button>
+    <button class="cta-btn">Get Started</button>
 </nav>
+`);
+  sourceStyles.set('header-1-pure-css', `
+.header-nav { background: #1a202c; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2d3748; }
+.header-nav .logo { font-size: 1.5rem; font-weight: 700; color: #4299e1; }
+.header-nav .nav-links { display: flex; gap: 2rem; }
+.header-nav .nav-links a { color: #cbd5e0; text-decoration: none; font-weight: 500; }
+.header-nav .cta-btn { background: #4299e1; color: #fff; border: none; padding: 0.5rem 1.5rem; border-radius: 0.375rem; font-weight: 600; cursor: pointer; }
 `);
 
   sourceComponents.set('header-2-pure-css', `
-<header class="header-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem 2rem; position: relative; overflow: hidden;">
-    <div style="position: absolute; inset: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);"></div>
-    <div style="position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
-        <div class="logo" style="font-size: 1.75rem; font-weight: 800; color: white; letter-spacing: -0.025em;">
-            GradientPro
-        </div>
-        <nav style="display: flex; gap: 2rem; align-items: center;">
-            <a href="#" style="color: white; text-decoration: none; font-weight: 500; opacity: 0.9; transition: opacity 0.2s;">Features</a>
-            <a href="#" style="color: white; text-decoration: none; font-weight: 500; opacity: 0.9; transition: opacity 0.2s;">Pricing</a>
-            <a href="#" style="color: white; text-decoration: none; font-weight: 500; opacity: 0.9; transition: opacity 0.2s;">Docs</a>
-            <button style="background: white; color: #667eea; border: none; padding: 0.625rem 1.5rem; border-radius: 9999px; font-weight: 600; cursor: pointer; transition: transform 0.2s;">
-                Try Free
-            </button>
+<header class="header-gradient">
+    <div class="header-gradient-overlay"></div>
+    <div class="header-gradient-content">
+        <div class="logo">GradientPro</div>
+        <nav class="header-gradient-nav">
+            <a href="#">Features</a>
+            <a href="#">Pricing</a>
+            <a href="#">Docs</a>
+            <button>Try Free</button>
         </nav>
     </div>
 </header>
 `);
+  sourceStyles.set('header-2-pure-css', `
+.header-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem 2rem; position: relative; overflow: hidden; }
+.header-gradient-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+.header-gradient-content { position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+.header-gradient .logo { font-size: 1.75rem; font-weight: 800; color: #fff; letter-spacing: -0.025em; }
+.header-gradient-nav { display: flex; gap: 2rem; align-items: center; }
+.header-gradient-nav a { color: #fff; text-decoration: none; font-weight: 500; opacity: 0.9; }
+.header-gradient-nav button { background: #fff; color: #667eea; border: none; padding: 0.625rem 1.5rem; border-radius: 9999px; font-weight: 600; cursor: pointer; }
+`);
 
-  // Body Examples (Pure CSS)
   sourceComponents.set('body-1-pure-css', `
-<section class="hero-section" style="padding: 6rem 2rem; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white;">
-    <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
-        <span class="badge" style="display: inline-block; background: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem;">
-            NEW FEATURE
-        </span>
-        <h1 style="font-size: 4rem; font-weight: 800; line-height: 1; margin-bottom: 2rem; background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            Build Amazing Websites Faster
-        </h1>
-        <p style="font-size: 1.25rem; color: #cbd5e0; max-width: 48rem; margin: 0 auto 3rem; line-height: 1.6;">
-            Create stunning web pages with our drag-and-drop builder. No coding required.
-        </p>
-        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-            <button style="background: #3b82f6; color: white; border: none; padding: 1rem 2.5rem; border-radius: 0.5rem; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                Start Building Free
-            </button>
-            <button style="background: transparent; color: #cbd5e0; border: 2px solid #4b5563; padding: 1rem 2.5rem; border-radius: 0.5rem; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                View Demo
-            </button>
+<section class="hero-section">
+    <div class="hero-content">
+        <span class="badge">NEW FEATURE</span>
+        <h1>Build Amazing Websites Faster</h1>
+        <p>Create stunning web pages with our drag-and-drop builder. No coding required.</p>
+        <div class="hero-actions">
+            <button class="hero-btn hero-btn-primary">Start Building Free</button>
+            <button class="hero-btn hero-btn-secondary">View Demo</button>
         </div>
     </div>
 </section>
 `);
+  sourceStyles.set('body-1-pure-css', `
+.hero-section { padding: 6rem 2rem; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff; }
+.hero-content { max-width: 1200px; margin: 0 auto; text-align: center; }
+.hero-content .badge { display: inline-block; background: #3b82f6; color: #fff; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; }
+.hero-content h1 { font-size: 4rem; font-weight: 800; line-height: 1; margin-bottom: 2rem; background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-content p { font-size: 1.25rem; color: #cbd5e0; max-width: 48rem; margin: 0 auto 3rem; line-height: 1.6; }
+.hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.hero-btn { border: none; padding: 1rem 2.5rem; border-radius: 0.5rem; font-size: 1.125rem; font-weight: 600; cursor: pointer; }
+.hero-btn-primary { background: #3b82f6; color: #fff; }
+.hero-btn-secondary { background: transparent; color: #cbd5e0; border: 2px solid #4b5563; }
+`);
 
-  // Footer Examples (Pure CSS)
   sourceComponents.set('footer-1-pure-css', `
-<footer class="basic-footer" style="background: #111827; padding: 3rem 2rem; border-top: 1px solid #374151;">
-    <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+<footer class="basic-footer">
+    <div class="footer-grid">
         <div class="footer-left">
-            <div style="font-size: 1.5rem; font-weight: bold; color: #60a5fa; margin-bottom: 0.5rem;">
-                WebBuilder
-            </div>
-            <p style="color: #9ca3af; font-size: 0.875rem;">
-                Build beautiful websites faster than ever before.
-            </p>
+            <div class="brand">WebBuilder</div>
+            <p>Build beautiful websites faster than ever before.</p>
         </div>
-        
         <div class="footer-middle">
-            <div style="color: #d1d5db; margin-bottom: 0.5rem; font-weight: 500;">
-                Quick Links
-            </div>
-            <div style="display: flex; gap: 1.5rem;">
-                <a href="#" style="color: #9ca3af; text-decoration: none; font-size: 0.875rem;">Home</a>
-                <a href="#" style="color: #9ca3af; text-decoration: none; font-size: 0.875rem;">About</a>
-                <a href="#" style="color: #9ca3af; text-decoration: none; font-size: 0.875rem;">Pricing</a>
-                <a href="#" style="color: #9ca3af; text-decoration: none; font-size: 0.875rem;">Contact</a>
+            <div class="footer-title">Quick Links</div>
+            <div class="footer-links">
+                <a href="#">Home</a>
+                <a href="#">About</a>
+                <a href="#">Pricing</a>
+                <a href="#">Contact</a>
             </div>
         </div>
-        
         <div class="footer-right">
-            <div style="color: #d1d5db; margin-bottom: 0.5rem; font-weight: 500;">
-                Contact
-            </div>
-            <p style="color: #9ca3af; font-size: 0.875rem;">
-                contact@webbuilder.com<br>
-                +1 (555) 123-4567
-            </p>
+            <div class="footer-title">Contact</div>
+            <p>contact@webbuilder.com<br>+1 (555) 123-4567</p>
         </div>
     </div>
-    
-    <div style="max-width: 1200px; margin: 2rem auto 0; padding-top: 2rem; border-top: 1px solid #374151; text-align: center;">
-        <p style="color: #6b7280; font-size: 0.875rem;">
-            © 2024 WebBuilder. All rights reserved.
-        </p>
+    <div class="footer-meta">
+        <p>&copy; 2024 WebBuilder. All rights reserved.</p>
     </div>
 </footer>
 `);
-
-  // Additional Tailwind versions
-  sourceComponents.set('header-1-tailwind', `
-<nav class="bg-gray-900 px-8 py-4 flex justify-between items-center border-b border-gray-800">
-    <div class="text-2xl font-bold text-blue-400">
-        BrandLogo
-    </div>
-    <div class="flex gap-8">
-        <a href="#" class="text-gray-300 hover:text-white font-medium">Home</a>
-        <a href="#" class="text-gray-300 hover:text-white font-medium">About</a>
-        <a href="#" class="text-gray-300 hover:text-white font-medium">Services</a>
-        <a href="#" class="text-gray-300 hover:text-white font-medium">Contact</a>
-    </div>
-    <button class="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">
-        Get Started
-    </button>
-</nav>
-`);
-
-  sourceComponents.set('body-1-tailwind', `
-<section class="bg-gradient-to-br from-gray-900 to-gray-800 py-24 px-4">
-    <div class="max-w-6xl mx-auto text-center">
-        <span class="inline-block bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-semibold mb-6">
-            NEW FEATURE
-        </span>
-        <h1 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-8">
-            Build Amazing Websites Faster
-        </h1>
-        <p class="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
-            Create stunning web pages with our drag-and-drop builder. No coding required.
-        </p>
-        <div class="flex gap-4 justify-center flex-wrap">
-            <button class="bg-blue-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-600 transition">
-                Start Building Free
-            </button>
-            <button class="bg-transparent text-gray-300 border-2 border-gray-600 px-8 py-4 rounded-lg text-lg font-semibold hover:border-gray-500 transition">
-                View Demo
-            </button>
-        </div>
-    </div>
-</section>
-`);
-
-  sourceComponents.set('footer-1-tailwind', `
-<footer class="bg-gray-950 py-12 px-4 border-t border-gray-800">
-    <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div class="text-center md:text-left">
-                <div class="text-2xl font-bold text-blue-400 mb-2">
-                    WebBuilder
-                </div>
-                <p class="text-gray-400 text-sm">
-                    Build beautiful websites faster than ever before.
-                </p>
-            </div>
-            
-            <div class="text-center">
-                <div class="text-gray-300 font-medium mb-2">
-                    Quick Links
-                </div>
-                <div class="flex gap-6">
-                    <a href="#" class="text-gray-400 hover:text-white text-sm">Home</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm">About</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm">Pricing</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm">Contact</a>
-                </div>
-            </div>
-            
-            <div class="text-center md:text-right">
-                <div class="text-gray-300 font-medium mb-2">
-                    Contact
-                </div>
-                <p class="text-gray-400 text-sm">
-                    contact@webbuilder.com<br>
-                    +1 (555) 123-4567
-                </p>
-            </div>
-        </div>
-        
-        <div class="mt-8 pt-8 border-t border-gray-800 text-center">
-            <p class="text-gray-500 text-sm">
-                © 2024 WebBuilder. All rights reserved.
-            </p>
-        </div>
-    </div>
-</footer>
+  sourceStyles.set('footer-1-pure-css', `
+.basic-footer { background: #111827; padding: 3rem 2rem; border-top: 1px solid #374151; }
+.basic-footer .footer-grid { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem; }
+.basic-footer .brand { font-size: 1.5rem; font-weight: 700; color: #60a5fa; margin-bottom: 0.5rem; }
+.basic-footer p { color: #9ca3af; font-size: 0.875rem; }
+.basic-footer .footer-title { color: #d1d5db; margin-bottom: 0.5rem; font-weight: 500; }
+.basic-footer .footer-links { display: flex; gap: 1.5rem; }
+.basic-footer .footer-links a { color: #9ca3af; text-decoration: none; font-size: 0.875rem; }
+.basic-footer .footer-meta { max-width: 1200px; margin: 2rem auto 0; padding-top: 2rem; border-top: 1px solid #374151; text-align: center; }
+.basic-footer .footer-meta p { color: #6b7280; }
 `);
 };
 
@@ -863,7 +801,15 @@ onMounted(() => {
     body: 'all',
     footer: 'all'
   };
+  refreshRenderedSource();
 });
+
+watch(
+  () => [selectedParts.header, selectedParts.body, selectedParts.footer],
+  () => {
+    refreshRenderedSource();
+  }
+);
 </script>
 
 <style scoped>
@@ -904,22 +850,6 @@ onMounted(() => {
   background: linear-gradient(135deg, #111827, #0f172a);
 }
 
-/* Animation */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out forwards;
-}
-
 /* Responsive Grid */
 @media (max-width: 640px) {
   .grid {
@@ -945,3 +875,6 @@ button.capitalize {
   text-transform: capitalize;
 }
 </style>
+
+
+

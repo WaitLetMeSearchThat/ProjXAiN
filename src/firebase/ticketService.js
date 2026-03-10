@@ -2,6 +2,7 @@ import { db } from './config'
 import {
   collection,
   addDoc,
+  getDocs,
   query,
   where,
   orderBy,
@@ -96,6 +97,23 @@ export function subscribeStudentTickets(studentId, onData, onError) {
       if (onError) onError(error)
     }
   )
+}
+
+export async function listStudentTicketsByStudentId(studentId) {
+  try {
+    const normalized = normalizeStudentId(studentId)
+    if (!normalized) return { success: true, tickets: [] }
+
+    const q = query(
+      collection(db, TICKETS_COLLECTION),
+      where('studentIdNormalized', '==', normalized)
+    )
+    const snapshot = await getDocs(q)
+    return { success: true, tickets: mapTickets(snapshot) }
+  } catch (error) {
+    console.error('Error fetching student tickets:', error)
+    return { success: false, message: 'Failed to fetch student tickets.' }
+  }
 }
 
 export async function updateInquiryTicket(ticketId, payload = {}) {

@@ -18,15 +18,24 @@ import AnnouncementsBlog from '../views/AnnouncementsBlog.vue';
 import GradeInquiry from '../views/GradeInquiry.vue';
 import Classrooms from '../views/Classrooms.vue';
 import Tools from '../views/Tools.vue';
+import PublicFeaturesView from '../views/PublicFeaturesView.vue';
+import PublicToolsView from '../views/PublicToolsView.vue';
+import PublicBuilderView from '../views/PublicBuilderView.vue';
 import StudentManagement from '../views/StudentManagement.vue';
 import CalendarView from '../views/CalendarView.vue';
+import RegistrarAccountsView from '../views/RegistrarAccountsView.vue';
+import StudentPasswordSetupView from '../views/StudentPasswordSetupView.vue';
 import UserProfileView from '../views/user/profile/UserProfileView.vue';
 import UserPostView from '../views/user/post/UserPostView.vue';
 import UserNotificationView from '../views/user/notification/UserNotificationView.vue';
 import { getRoleDefaultRoute } from '@/Components/roleNavigation';
 
 const routes = [
-  { path: '/', component: LandingPageView },
+  { path: '/', name: 'home', component: LandingPageView },
+  { path: '/features', name: 'features', component: PublicFeaturesView, alias: ['/feature'] },
+  { path: '/features/tools', name: 'features-tools', component: PublicToolsView },
+  { path: '/features/builder', name: 'features-builder', component: PublicBuilderView },
+  { path: '/grade-inquiry', component: GradeInquiry },
   { path: '/builder', component: Builder },
   { path: '/login', component: Login },
   { path: '/unauthorized', component: Unauthorized },
@@ -68,6 +77,7 @@ const routes = [
       { path: 'profile', component: UserProfileView },
       { path: 'post', component: UserPostView },
       { path: 'notification', component: UserNotificationView },
+      { path: 'security', component: StudentPasswordSetupView },
       { path: 'announcements', component: AnnouncementsBlog },
       { path: 'calendar', component: CalendarView }
     ]
@@ -80,6 +90,7 @@ const routes = [
       { path: '', component: RegistrarDashboard },
       { path: 'records', component: StudentManagement },
       { path: 'enrollment', component: StudentManagement },
+      { path: 'accounts', component: RegistrarAccountsView },
       { path: 'announcements', component: AnnouncementsBlog },
       { path: 'calendar', component: CalendarView }
     ]
@@ -102,6 +113,14 @@ const router = createRouter({
   routes
 });
 
+const redirectTo = (next, to, targetPath) => {
+  if (!targetPath || targetPath === to.path) {
+    next();
+    return;
+  }
+  next(targetPath);
+};
+
 // Navigation Guard
 router.beforeEach(async (to, from, next) => {
   const { user, role, userProfile, loading } = useAuth();
@@ -120,11 +139,24 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.requiresAuth) {
     if (!user.value) {
-      next('/login');
+      redirectTo(next, to, '/login');
     } else if (to.meta.allowedRoles) {
       const resolvedRole = role.value || userProfile.value?.role;
+      if (!resolvedRole) {
+        redirectTo(next, to, '/');
+        return;
+      }
       if (!to.meta.allowedRoles.includes(resolvedRole)) {
-        next('/unauthorized');
+        redirectTo(next, to, '/unauthorized');
+        return;
+      }
+      const needsPasswordSetup = resolvedRole === 'role_student' && Boolean(userProfile.value?.mustChangePassword);
+      if (needsPasswordSetup && to.path !== '/student/security') {
+        redirectTo(next, to, '/student/security');
+        return;
+      }
+      if (!needsPasswordSetup && to.path === '/student/security') {
+        redirectTo(next, to, '/student');
         return;
       }
       next();
@@ -134,12 +166,14 @@ router.beforeEach(async (to, from, next) => {
   } else {
     if (to.path === '/login' && user.value) {
       const resolvedRole = role.value || userProfile.value?.role;
-      next(getRoleDefaultRoute(resolvedRole));
+      const defaultRoute = getRoleDefaultRoute(resolvedRole);
+      redirectTo(next, to, defaultRoute);
       return;
     }
     if (to.path === '/' && user.value) {
       const resolvedRole = role.value || userProfile.value?.role;
-      next(getRoleDefaultRoute(resolvedRole));
+      const defaultRoute = getRoleDefaultRoute(resolvedRole);
+      redirectTo(next, to, defaultRoute);
       return;
     }
     next();
@@ -147,3 +181,4 @@ router.beforeEach(async (to, from, next) => {
 });
 
 export default router;
+
