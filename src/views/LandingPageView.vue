@@ -1,10 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import ThemeSelector from '@/Components/ThemeSelector.vue'
-
 import Calendar from '@/Components/Calendar.vue'
-
 import RouteNotice from '../Components/RouteNotice.vue';
 // ------------------------------
 // Modal Logic
@@ -56,12 +53,7 @@ const line3 = ref('Hub'.split(''))
       @primary="handleProceed"
     />
     
-    <div class="min-h-screen w-screen flex items-center">
-
-    <!-- Theme Selector -->
-    <div class="flex w-full absolute top-0 right-0 justify-end">
-      <ThemeSelector />
-    </div>
+    <div class="min-h-screen w-screen flex items-center pt-20 lg:pt-24">
 
     <!-- Main Container -->
     <div class="shadow-2xl max-w-7xl mx-auto w-full h-auto rounded-lg">
@@ -206,7 +198,7 @@ const line3 = ref('Hub'.split(''))
       </div>
 
     </div>
-  </div>    <Footer />
+  </div>
 </template>
 
 <style scoped>

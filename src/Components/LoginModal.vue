@@ -49,7 +49,7 @@
                 <div v-if="currentSection === 'login'" key="login" class="space-y-8">
                   <div class="text-center space-y-3">
                     <h2 class="text-2xl sm:text-3xl font-black bg-gradient-to-r from-blue-700 via-red-600 to-yellow-500 bg-clip-text text-transparent">Log in</h2>
-                    <p class="text-slate-500 font-medium">Use your Student ID, Email, and Password</p>
+<p class="text-slate-500 font-medium">Use your Email and Password</p>
                   </div>
 
                   <Transition name="notice-slide">
@@ -75,17 +75,7 @@
                   </Transition>
 
                   <form @submit.prevent="handlePasswordLogin" class="p-4 space-y-4">
-                    <div class="group">
-                      <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Student ID Number</label>
-                      <input
-                        v-model="loginForm.studentId"
-                        type="text"
-                        required
-                        placeholder="e.g. 12-3456"
-                        class="w-full px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition-all text-slate-800 font-medium mt-2"
-                      />
-                    </div>
-                    <div class="group">
+<div class="group">
                       <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
                       <input
                         v-model="loginForm.email"
@@ -231,7 +221,6 @@ const authNotice = ref({
 });
 
 const loginForm = reactive({
-  studentId: '',
   email: '',
   password: ''
 });
@@ -360,17 +349,10 @@ const handlePasswordLogin = async () => {
   isLoading.value = true;
   clearAuthNotice();
   try {
-    const studentId = String(loginForm.studentId || '').trim();
     const email = String(loginForm.email || '').trim();
     const password = String(loginForm.password || '');
-    if (!studentId || !email || !password) {
-      showAuthNotice('error', 'Login failed', 'Student ID, email, and password are required.');
-      return;
-    }
-
-    const verification = await verifyStudentRoleIdentity(studentId, email);
-    if (!verification.valid) {
-      showAuthNotice('error', 'Login failed', verification.message);
+    if (!email || !password) {
+      showAuthNotice('error', 'Login failed', 'Email and password are required.');
       return;
     }
 

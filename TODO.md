@@ -1,23 +1,11 @@
-# Student Profile Page Redesign - TODO
+# Task: Fix encountered problem, use the newly implemented header component
 
-## Task
-Convert UserPageShell.vue from a general-purpose profile (for all roles) to focus ONLY on Students with:
-- Student info in 1 row
-- Necessary student features below
+## Steps:
+- [ ] 1. Create TODO.md with breakdown of approved plan.
+- [ ] 2. Read LandingPageView.vue contents if needed.
+- [x] 3. Edit src/views/LandingPageView.vue to import and use Header component, remove redundant ThemeSelector.
+- [x] 4. Update TODO.md after edit.
+- [x] 5. Test changes (run `npm run dev` if needed).
+- [x] 6. Check other views if needed (e.g., App.vue): Updated App.vue to always use Header with proper padding.
+- [x] 7. Mark complete and attempt_completion.
 
-## Steps
-
-1. [x] Analyze current UserPageShell.vue code structure
-2. [x] Read useAuth, gradeService, studentService, announcementService, ticketService
-3. [x] Plan the new UI layout
-4. [x] Implement new Student Profile page with:
-   - Student info row (avatar, name, student ID, program, year/section, status)
-   - Grades card (current semester grades)
-   - Announcements card (recent posts)
-   - Tickets card (grade inquiry status)
-   - Quick actions
-5. [x] Test the implementation
-
-## Progress
-- [x] Step 1-4: COMPLETED - Analyzed, planned, and implemented the new design
-- [x] Step 5: COMPLETED - Test the implementation

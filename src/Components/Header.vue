@@ -1,15 +1,21 @@
 <script setup>
-import { ref, computed, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
-import { RouterLink, useRouter, useRoute } from 'vue-router'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import ThemeSelector from '@/Components/ThemeSelector.vue'
 import { useAuth } from '@/composables/useAuth'
+import { getRoleDefaultRoute } from '@/Components/roleNavigation'
 
 const LoginModal = defineAsyncComponent(() =>
   import('@/Components/LoginModal.vue')
 )
 
 const navLinks = ref([
-  { name: 'Home', to: { name: 'home' } },
-  { name: 'Features', to: { name: 'features' } },
+  { name: 'HOME', to: { name: 'home' } },
+  { name: 'FEATURES', to: { name: 'features' } },
+  { name: 'RESOURCES', to: { name: 'features-tools' } },
+{ name: 'IDE', to: '/builder' },
+  { name: 'AI', to: '/grade-inquiry' },
+  { name: 'COMPONENTS', to: '/builder' },
 ])
 
 const isMenuOpen = ref(false)
@@ -19,17 +25,25 @@ const isScrolled = ref(false)
 const router = useRouter()
 const route = useRoute()
 const { user, userProfile, role, isAuthenticated, logout } = useAuth()
+const resolvedRole = computed(() => role.value || userProfile.value?.role || '')
+const roleLabel = computed(() => {
+  const labels = {
+    role_admin: 'Administrator',
+    role_instructor: 'Instructor',
+    role_student: 'Student',
+    role_registrar: 'Registrar'
+  }
 
-/* -------------------------------
-   USER DISPLAY LOGIC
--------------------------------- */
+  return labels[resolvedRole.value] || 'Portal User'
+})
+
 const displayName = computed(() => {
   return (
     user.value?.displayName ||
     userProfile.value?.displayName ||
     userProfile.value?.name ||
-    user.value?.email ||
-    'Student'
+    (userProfile.value?.studentId ? `Student ${userProfile.value.studentId}` : '') ||
+    roleLabel.value
   )
 })
 
@@ -38,12 +52,37 @@ const avatarUrl = computed(() => user.value?.photoURL || '')
 const initials = computed(() => {
   const name = displayName.value || ''
   const parts = name.split(' ').filter(Boolean)
-  return parts.slice(0, 2).map(p => p[0].toUpperCase()).join('') || 'ST'
+  return parts.slice(0, 2).map((part) => part[0].toUpperCase()).join('') || 'ST'
 })
 
-/* -------------------------------
-   NAVIGATION LOGIC
--------------------------------- */
+const dashboardRoute = computed(() => getRoleDefaultRoute(resolvedRole.value))
+const dashboardLabel = computed(() => {
+  const labels = {
+    role_admin: 'Admin Dashboard',
+    role_instructor: 'Faculty Dashboard',
+    role_student: 'Student Dashboard',
+    role_registrar: 'Registrar Dashboard',
+  }
+
+  return labels[resolvedRole.value] || 'Dashboard'
+})
+
+function isActiveLink(link) {
+  if (typeof link.to === 'string') {
+    return route.path === link.to
+  }
+
+  if (link.to?.name) {
+    return route.name === link.to.name
+  }
+
+  if (link.to?.path) {
+    return route.path === link.to.path
+  }
+
+  return false
+}
+
 function toggleMenu() {
   isMenuOpen.value = !isMenuOpen.value
 }
@@ -71,9 +110,6 @@ async function handleLogout() {
   router.push('/')
 }
 
-/* -------------------------------
-   SCROLL SHADOW EFFECT
--------------------------------- */
 function handleScroll() {
   isScrolled.value = window.scrollY > 10
 }
@@ -88,145 +124,108 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <!-- FIXED HEADER -->
   <header
-    class="fixed top-0 left-0 w-full  backdrop-blur-2xl z-50 transition-all duration-300"
-    :class="[
-      isScrolled
-        ? ''
-        : ''
-    ]"
+    class="fixed top-4  min-w-4xl max-w-5xl  left-1/2 z-50 w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl shadow-2xl backdrop-blur-2xl transition-all duration-300"
+    :class="[isScrolled ? 'bg-gray-900/80' : 'bg-white/80']"
   >
-    <div style="margin-top:-12px;"class="max-w-7xl  mx-auto  py-2 my-6 mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-16">
-
-        <!-- LOGO -->
+    <div class="sticky  max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between gap-4">
         <RouterLink
           to="/"
-          class="text-2xl glass-effect  mt-6 hover:bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-2 rounded-lg font-bold text-emerald-600 hover:text-white transition"
+          class="glass-effect rounded-lg px-3 py-2 text-2xl font-bold text-emerald-600 transition hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-700 hover:text-white"
         >
-          Proj X
+      BCC
         </RouterLink>
 
-        <!-- DESKTOP NAV -->
-        <nav class="hidden md:flex text-white bg-gradient-to-r from-emerald-700 to-emerald-200 hover:scale-110 items-center rounded-xl shadow-2xl space-x-6   px-12 py-5 backdrop-blur-2xl ">
+        <nav class="hidden items-center space-x-4 rounded-xl bg-gray-100 px-4  md:flex">
           <RouterLink
             v-for="link in navLinks"
             :key="link.name"
             :to="link.to"
-            class="relative px-4 py-2  backdrop-blur-2xl bg-gray-100 hover:scale-110  rounded-md px-3 mt-6 text-sm font-bold transition"
-              :class="
-                route.name === link.to.name
-                  ? 'text-emerald-500'
-                  : 'text-emerald-950 hover:text-indigo-700'
-              "
+            class="relative rounded-md px-3 py-3 text-sm transition hover:scale-110 backdrop-blur-2xl"
+            :class="isActiveLink(link) ? 'text-emerald-500' : 'text-emerald-950 hover:text-indigo-700'"
           >
             {{ link.name }}
-
-            <!-- Active underline -->
             <span
-              v-if="route.name === link.to.name"
-              class="absolute left-0 -bottom-1 w-full h-0.5 bg-indigo-600 rounded-full"
+              v-if="isActiveLink(link)"
+              class="absolute left-0 -bottom-1 h-0.5 w-full rounded-full bg-indigo-600"
             />
           </RouterLink>
-           
         </nav>
 
-        <!-- RIGHT SECTION -->
-        <div class="flex items-center glass-effect shadow-2xl p-2 rounded-lg mt-6 gap-4">
+        <div class="glass-effect flex items-center gap-3 rounde d-lg p-2 shadow-2xl">
+          <ThemeSelector class="hidden lg:block" />
 
-          <!-- AUTHENTICATED USER -->
           <template v-if="isAuthenticated">
-             <!-- Avatar -->
-              <div class="w-9 h-9 my-auto rounded-full overflow-hidden bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">
-                <img
-                  v-if="avatarUrl"
-                  :src="avatarUrl"
-                  class="w-full h-full object-cover"
-                />
-                <span v-else>{{ initials }}</span>
-              </div>
-            <div class="hidden sm:flex items-center gap-3 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-sm">
-
-             
-
-              <!-- Name -->
-          
-
-              <!-- Logout -->
-              <button
-                @click="handleLogout"
-                class="text-sm text-gray-600  transition"
-              >
-                Logout
-              </button>
-
+            <div class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-indigo-500 text-xs font-bold text-white">
+              <img v-if="avatarUrl" :src="avatarUrl" class="h-full w-full object-cover" />
+              <span v-else>{{ initials }}</span>
             </div>
+            <div class="hidden text-right leading-tight xl:block">
+              <div class="text-xs font-semibold text-slate-500">Signed in as</div>
+              <div class="text-sm font-bold text-slate-800">{{ displayName }}</div>
+            </div>
+            <RouterLink
+              :to="dashboardRoute"
+              class="hidden rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105 md:block"
+            >
+              {{ dashboardLabel }}
+            </RouterLink>
+            <button
+              @click="handleLogout"
+              class="hidden rounded-lg border border-slate-200 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:block"
+            >
+              Logout
+            </button>
           </template>
 
-          <!-- NOT AUTHENTICATED -->
           <template v-else>
             <button
               @click="openLogin"
-              class="hidden md:block px-4 py-2 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 hover:scale-105 transition"
+              class="hidden rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105 md:block"
             >
               Login
             </button>
           </template>
-       
 
-          <!-- MOBILE MENU BUTTON -->
-          <button
-            @click="toggleMenu"
-            class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"
-          >
-            <svg
-              v-if="!isMenuOpen"
-              class="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16" />
+          <button @click="toggleMenu" class="rounded-md p-2 text-gray-600 hover:bg-gray-100 md:hidden">
+            <svg v-if="!isMenuOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
 
-            <svg
-              v-else
-              class="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M6 18L18 6M6 6l12 12" />
+            <svg v-else class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- MOBILE MENU -->
-    <div
-      v-if="isMenuOpen"
-      class="md:hidden mx-4 mb-6 px-4 rounded-xl bg-white border-t border-gray-200"
-    >
-      <div class="px-4 py-3 space-y-2">
+    <div v-if="isMenuOpen" class="mx-4 mb-6 rounded-xl border-t border-gray-200 bg-white px-4 md:hidden">
+      <div class="space-y-3 px-4 py-3">
+        <ThemeSelector />
 
         <RouterLink
           v-for="link in navLinks"
           :key="link.name"
           :to="link.to"
           @click="closeMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+          class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
         >
           {{ link.name }}
         </RouterLink>
 
         <template v-if="isAuthenticated">
+          <RouterLink
+            :to="dashboardRoute"
+            @click="closeMenu"
+            class="block w-full rounded-md bg-emerald-600 px-3 py-2 text-base font-semibold text-white hover:bg-emerald-700"
+          >
+            {{ dashboardLabel }}
+          </RouterLink>
           <button
             @click="handleLogout"
-            class="w-full text-left px-3 py-2 rounded-md text-base font-semibold text-gray-700 border border-gray-200 hover:bg-gray-50"
+            class="w-full rounded-md border border-gray-200 px-3 py-2 text-left text-base font-semibold text-gray-700 hover:bg-gray-50"
           >
             Logout
           </button>
@@ -235,20 +234,17 @@ onUnmounted(() => {
         <template v-else>
           <button
             @click="openLogin"
-            class="w-full px-3 py-2 rounded-2xl text-base font-semibold text-white bg-emerald-400 hover:bg-emerald-700"
+            class="w-full rounded-2xl bg-emerald-400 px-3 py-2 text-base font-semibold text-white hover:bg-emerald-700"
           >
             Login
           </button>
         </template>
-
       </div>
     </div>
   </header>
 
-  <!-- Spacer (IMPORTANT for fixed nav) -->
-  <div class="h-16"></div>
+  <div class="h-20"></div>
 
-  <!-- LOGIN MODAL -->
   <LoginModal
     :isOpen="isLoginOpen"
     @close="closeLogin"

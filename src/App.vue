@@ -53,11 +53,10 @@ watch(
 
   <!-- Main wrapper -->
   <div class="min-h-screen flex flex-col">
-    <Header v-if="!isAuthenticated" />
-   
+    <Header />
 
     <!-- Main Content Area -->
-    <main class="flex-grow mt-8 theme-page-shell">
+    <main class="flex-grow pt-20 lg:pt-24 theme-page-shell">
       <router-view v-slot="{ Component }">
         <Transition name="route-fade" mode="out-in">
           <component :is="Component" :key="route.fullPath" class="animate-fade-in" />
